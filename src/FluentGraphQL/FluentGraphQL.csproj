@@ -1,25 +1,45 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<PackageId>FluentGraphQL</PackageId>
-		<Version>1.0.2</Version>
 		<Authors>Nayruu</Authors>
 		<Description>A simple and fluent GraphQL query builder for .NET</Description>
 		<PackageTags>GraphQL Builder Fluent .NET</PackageTags>
 		<RepositoryUrl>https://github.com/Nayruuu/graphql-generator</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/Nayruuu/graphql-generator</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RootNamespace>FluentGraphQL</RootNamespace>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<LangVersion>9</LangVersion>
+		<LangVersion>10</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="System.Text.Json" Version="9.0.7" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.146" PrivateAssets="all" />
+		<!-- TODO: add Microsoft.SourceLink.GitHub once a feed with nuget.org access is available (source debugging for the published package). -->
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="..\..\PUBLISHING.md">
+	    <Link>PUBLISHING.md</Link>
+	  </Content>
 	</ItemGroup>
 </Project>

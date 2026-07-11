@@ -1,5 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
-using FluentQL.Benchmark.Benchmarks;
+using FluentGraphQL.Benchmark.Benchmarks;
 
 BenchmarkRunner.Run<GraphQLBuilderBenchmark>();
 

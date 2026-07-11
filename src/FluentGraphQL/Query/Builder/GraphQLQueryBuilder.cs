@@ -1,292 +1,404 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+using System.Text;
+using System.Text.Json;
 using System.Collections;
 using System.Globalization;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Encodings.Web;
 
-namespace FluentGraphQL
+namespace FluentGraphQL;
+
+/// <summary>
+/// Builds a GraphQL query or mutation and its variables from a fluent, strongly-typed description.
+/// </summary>
+/// <remarks>
+/// Configure a builder from a single thread. Once configured, <see cref="Query"/> and <see cref="Variables"/>
+/// may be read concurrently: they allocate their own output per call and never mutate shared state.
+/// Do not add queries or variables while another thread is reading.
+/// </remarks>
+public class GraphQLQueryBuilder : GraphQLBuilder
 {
-    public class GraphQLQueryBuilder : GraphQlBuilder
+    [ThreadStatic]
+    private static StringBuilder _cachedBuilder;
+    
+    private static readonly JsonSerializerOptions ArgumentSerializerOptions = new()
     {
-        private readonly bool mutation;
-        private readonly Dictionary<string, GraphQLQueryObject> queries;
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
 
-        public string Query
+    private static readonly JsonSerializerOptions VariablesSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    private readonly bool _mutation;
+    private readonly Dictionary<string, GraphQLQueryObject> _queries;
+
+    /// <summary>
+    /// The generated GraphQL document. Built on each access.
+    /// </summary>
+    public string Query => BuildQuery();
+
+    /// <summary>
+    /// The declared variables and their values, camelCased, ready to send alongside <see cref="Query"/>.
+    /// </summary>
+    public JsonObject Variables
+    {
+        get
         {
-            get
-            {
-                this.BuildQuery();
+            var jsonObject = new JsonObject();
 
-                return this.Builder.ToString();
-            }
-        }
-        
-        public JsonObject Variables
-        {
-            get
+            if (HasParameters)
             {
-                var jsonObject = new JsonObject();
-
-                foreach (var param in Parameters)
+                foreach (var parameter in Parameters)
                 {
-                    if (param.Value?.Value is not null)
+                    if (parameter.Value?.Value is not null)
                     {
-                        jsonObject[param.Key.ToCamelCase()] = JsonValue.Create(param.Value.Value);
+                        jsonObject[parameter.Key.ToCamelCase()] = JsonSerializer.SerializeToNode(parameter.Value.Value, VariablesSerializerOptions);
                     }
                 }
-
-                return jsonObject;
-            }
-        }
-        
-        public int QueriesCount => queries.Count;
-
-        public GraphQLRequest Request => new GraphQLRequest(Query, Variables);
-
-        public GraphQLQueryBuilder(bool mutation = false) : base()
-        {
-            this.mutation = mutation;
-            this.queries = new Dictionary<string, GraphQLQueryObject>();
-        }
-
-        public GraphQLQueryBuilder AddVariable(GraphQLParameter parameter)
-        {
-            this.Parameters[parameter.Name] = parameter;
-
-            return this;
-        }
-
-        public GraphQLQueryBuilder AddVariables(params GraphQLParameter[] parameters)
-        {
-            foreach (var parameter in parameters)
-            {
-                this.AddVariable(parameter);
             }
 
-            return this;
-        }
-
-        public GraphQLQueryBuilder AddVariable(string name, GraphQLParameterType type, object value)
-        {
-            this.AddVariable(new GraphQLParameter() { Name = name, Type = type, Value = value });
-
-            return this;
-        }
-
-        public GraphQLQueryBuilder AddScalarQuery<T>(GraphQLQueryObject<T> queryObject) where T : struct
-        {
-            var queryName = queryObject.HasAliasName() ? queryObject.AliasName : queryObject.Name;
-
-            this.queries[queryName] = queryObject;
-
-            return this;
-        }
-
-        public GraphQLQueryBuilder AddQuery<T>(GraphQLQueryObject<T> queryObject) where T : class
-        {
-            var queryName = queryObject.HasAliasName() ? queryObject.AliasName : queryObject.Name;
-
-            this.queries[queryName] = queryObject;
-
-            return this;
-        }
-
-        private void BuildQuery()
-        {
-            int tabCount = 1;
-
-            this.Builder.Clear();
-
-            this.Builder.AppendLine(mutation ? "mutation" : "query");
-
-            if (Parameters.Any())
-            {
-                this.Builder.Append(" (");
-                var graphQLParameters = Parameters
-                    .Where(parameter => parameter.Value.Value != null)
-                    .Select(parameter =>
-                    {
-                        string type = parameter.Value.Type switch
-                        {
-                            GraphQLParameterType.INT => "Int!",
-                            GraphQLParameterType.STRING => "String!",
-                            GraphQLParameterType.DATETIME => "DateTime!",
-                            GraphQLParameterType.BOOLEAN => "Boolean!",
-                            GraphQLParameterType.STRING_ARRAY => "[String]!",
-                            GraphQLParameterType.INT_ARRAY => "[Int!]!",
-                            GraphQLParameterType.DATETIME_ARRAY => "[DateTime]!",
-                            GraphQLParameterType.OBJECT => parameter.Value.Value.GetType().Name,
-                            GraphQLParameterType.UUID => "UUID!",
-                            _ => throw new NotImplementedException()
-                        };
-
-                        return $"${parameter.Key}: {type}";
-                    });
-
-                this.Builder.Append(string.Join(", ", graphQLParameters));
-                this.Builder.Append(")");
-            }
-
-            this.Builder.AppendLine(" {");
-
-            foreach (var query in queries)
-            {
-                if (query.Value.HasAliasName())
-                {
-                    this.Builder.Append($"{query.Value.AliasName}: ");
-                }
-
-                this.Builder.Append($"{query.Value.Name}(");
-
-                if (!(query.Value.Arguments is null))
-                {
-                    this.AppendArguments(query.Value.Arguments);
-                }
-
-                this.Builder.AppendLine(") {");
-
-                this.AppendFields(query.Value.Fields, tabCount + 1);
-
-                this.Builder.AppendLine("}");
-            }
-
-            this.Builder.AppendLine("}");
-        }
-
-        private void AppendArguments(object arguments, bool fromObject = false)
-        {
-            var properties = arguments.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            bool first = true;
-
-            foreach (var property in properties)
-            {
-                var key = property.Name;
-                var value = property.GetValue(arguments);
-
-                if (first) first = false;
-                else this.Builder.Append(", ");
-
-                this.Builder.Append(key.ToCamelCase());
-                this.Builder.Append(": ");
-
-                if (value is null)
-                {
-                    this.Builder.Append("null");
-                }
-                else if (value is Array array)
-                {
-                    this.Builder.Append("[ ");
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        if (i > 0) this.Builder.Append(", ");
-                        var item = array.GetValue(i);
-
-                        if (item is null)
-                        {
-                            this.Builder.Append("null");
-                        }
-                        else if (item.GetType().IsClass && item is not string)
-                        {
-                            this.Builder.Append("{ ");
-                            AppendArguments(item, true);
-                            this.Builder.Append(" }");
-                        }
-                        else
-                        {
-                            this.Builder.Append(FormatQueryArgument(item));
-                        }
-                    }
-                    this.Builder.Append(" ]");
-                }
-                else if (value.GetType().IsClass && value is not string)
-                {
-                    this.Builder.Append("{ ");
-                    AppendArguments(value, true);
-                    this.Builder.Append(" }");
-                }
-                else
-                {
-                    this.Builder.Append(FormatQueryArgument(value));
-                }
-            }
-        }
-
-        private void AppendFields(Dictionary<string, GraphQLQueryObjectField> fields, int tabCount)
-        {
-            foreach (var field in fields)
-            {
-                if (field.Value.HasAliasName())
-                {
-                    this.Builder.Append($"{field.Value.AliasName}: ");
-                }
-
-                if (field.Value.Fields.Count > 0)
-                {
-                    if (!(field.Value.Arguments is null))
-                    {
-                        this.Builder.Append($"{field.Value.Name.ToCamelCase()} (");
-                        this.AppendArguments(field.Value.Arguments);
-                        this.Builder.AppendLine(") {");
-                    }
-                    else
-                    {
-                        this.Builder.AppendLine($"{field.Value.Name.ToCamelCase()} {{");
-                    }
-
-
-                    this.AppendFields(field.Value.Fields, tabCount + 1);
-
-                    this.Builder.AppendLine("}");
-                }
-                else
-                {
-                    this.Builder.AppendLine($"{field.Value.Name.ToCamelCase()}");
-                }
-            }
-        }
-
-        private string FormatQueryArgument(object value)
-        {
-            string FormatEnumerableValue(IEnumerable value)
-            {
-                var items = new List<string>();
-
-                foreach (var item in value)
-                {
-                    string argument = FormatQueryArgument(item);
-
-                    if (argument != null)
-                    {
-                        items.Add(argument);
-                    }
-                }
-
-                return $"[{string.Join(",", items)}]";
-            }
-
-            if (value is string && Parameters.ContainsKey(value as string))
-            {
-                if (Parameters[value as string].Value != null)
-                {
-                    return $"${value}";
-                }
-
-                return null;
-            }
-
-            return value switch
-            {
-                bool booleanValue => value.ToString().ToLower(),
-                string strValue => "\"" + strValue + "\"",
-                float floatValue => floatValue.ToString(CultureInfo.CreateSpecificCulture("en-us")),
-                double doubleValue => doubleValue.ToString(CultureInfo.CreateSpecificCulture("en-us")),
-                decimal decimalValue => decimalValue.ToString(CultureInfo.CreateSpecificCulture("en-us")),
-                IEnumerable enumerableValue => FormatEnumerableValue(enumerableValue),
-                _ => value.ToString()
-            };
+            return jsonObject;
         }
     }
+
+    /// <summary>
+    /// The number of root queries (or mutations) currently added.
+    /// </summary>
+    public int QueriesCount => _queries.Count;
+
+    /// <summary>
+    /// The <see cref="Query"/> and <see cref="Variables"/> bundled as a request payload.
+    /// </summary>
+    public GraphQLRequest Request => new(Query, Variables);
+
+    /// <summary>
+    /// Creates a builder for a query, or for a mutation when <paramref name="mutation"/> is true.
+    /// </summary>
+    /// <param name="mutation">Whether to emit a <c>mutation</c> rather than a <c>query</c>.</param>
+    public GraphQLQueryBuilder(bool mutation = false)
+    {
+        _mutation = mutation;
+        _queries = new Dictionary<string, GraphQLQueryObject>();
+    }
+
+    /// <summary>
+    /// Declares a variable from a pre-built parameter.
+    /// </summary>
+    /// <param name="parameter">The variable to declare.</param>
+    /// <returns>The same builder, to continue chaining.</returns>
+    public GraphQLQueryBuilder AddVariable(GraphQLParameter parameter)
+    {
+        Parameters[GraphQLName.Validate(parameter.Name)] = parameter;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Declares several variables in one call.
+    /// </summary>
+    /// <param name="parameters">The variables to declare.</param>
+    /// <returns>The same builder, to continue chaining.</returns>
+    public GraphQLQueryBuilder AddVariables(params GraphQLParameter[] parameters)
+    {
+        foreach (var parameter in parameters)
+        {
+            AddVariable(parameter);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Declares a variable with an explicit GraphQL type, rather than inferring it from the value.
+    /// </summary>
+    /// <param name="name">The variable name (without the leading <c>$</c>).</param>
+    /// <param name="type">The explicit GraphQL type of the variable.</param>
+    /// <param name="value">The variable value.</param>
+    /// <returns>The same builder, to continue chaining.</returns>
+    public GraphQLQueryBuilder AddVariable(string name, GraphQLParameterType type, object value)
+    {
+        AddVariable(new GraphQLParameter { Name = name, Type = type, Value = value });
+
+        return this;
+    }
+
+    /// <summary>
+    /// Declares a variable, inferring its GraphQL type from the value's CLR type.
+    /// </summary>
+    /// <param name="name">The variable name (without the leading <c>$</c>).</param>
+    /// <param name="value">The variable value; its CLR type determines the GraphQL type.</param>
+    /// <returns>The same builder, to continue chaining.</returns>
+    public GraphQLQueryBuilder AddVariable(string name, object value)
+    {
+        AddVariable(new GraphQLParameter { Name = name, Value = value });
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a root query (or mutation) object.
+    /// </summary>
+    /// <typeparam name="T">The type selected by the query object.</typeparam>
+    /// <param name="queryObject">The root query to add.</param>
+    /// <returns>The same builder, to continue chaining.</returns>
+    /// <exception cref="InvalidOperationException">A query with the same name or alias was already added.</exception>
+    public GraphQLQueryBuilder AddQuery<T>(GraphQLQueryObject<T> queryObject) where T : class
+    {
+        var queryName = queryObject.HasAliasName() ? queryObject.AliasName : queryObject.Name;
+
+        if (_queries.ContainsKey(queryName))
+        {
+            throw new InvalidOperationException($"A query named '{queryName}' has already been added. Use As(...) to give it a distinct alias.");
+        }
+
+        _queries[queryName] = queryObject;
+
+        return this;
+    }
+
+    private static StringBuilder RentBuilder()
+    {
+        var builder = _cachedBuilder;
+
+        if (builder is null)
+        {
+            return new StringBuilder(256);
+        }
+
+        _cachedBuilder = null;
+        builder.Clear();
+
+        return builder;
+    }
+
+    private static string ReturnBuilder(StringBuilder builder)
+    {
+        var result = builder.ToString();
+        _cachedBuilder = builder;
+
+        return result;
+    }
+
+    private string BuildQuery()
+    {
+        var builder = RentBuilder();
+
+        builder.AppendLine(_mutation ? "mutation" : "query");
+        AppendParameters(builder);
+        builder.AppendLine(" {");
+
+        foreach (var query in _queries.Values)
+        {
+            AppendQueryObject(builder, query);
+        }
+
+        builder.AppendLine("}");
+
+        return ReturnBuilder(builder);
+    }
+
+    private void AppendParameters(StringBuilder builder)
+    {
+        if (HasParameters == false)
+        {
+            return;
+        }
+
+        var declaredParameters = Parameters.Values
+            .Where(parameter => parameter.Value is not null)
+            .Select(parameter => $"${parameter.Name}: {GraphQLTypeName.Resolve(parameter)}")
+            .ToList();
+
+        if (declaredParameters.Any())
+        {
+            builder.Append(" (").Append(string.Join(", ", declaredParameters)).Append(")");
+        }
+    }
+
+    private void AppendQueryObject(StringBuilder builder, GraphQLQueryObject query)
+    {
+        if (query.HasAliasName())
+        {
+            builder.Append(query.AliasName).Append(": ");
+        }
+
+        builder.Append(query.Name);
+
+        if (query.Arguments is not null)
+        {
+            builder.Append("(");
+            AppendArguments(builder, query.Arguments);
+            builder.Append(")");
+        }
+
+        builder.AppendLine(" {");
+        AppendFields(builder, query.Fields);
+        builder.AppendLine("}");
+    }
+
+    private void AppendArguments(StringBuilder builder, object arguments)
+    {
+        var properties = TypeProperties.Of(arguments.GetType());
+        var first = true;
+
+        foreach (var property in properties)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                builder.Append(", ");
+            }
+
+            AppendCamelCase(builder, property.Name);
+            builder.Append(": ");
+            AppendValue(builder, property.GetValue(arguments));
+        }
+    }
+
+    private void AppendValue(StringBuilder builder, object value)
+    {
+        switch (value)
+        {
+            case null:
+                builder.Append("null");
+                break;
+            case GraphQLVariable reference:
+                AppendVariableReference(builder, reference);
+                break;
+            case string:
+                builder.Append(FormatQueryArgument(value));
+                break;
+            case IDictionary:
+                throw new InvalidOperationException("A dictionary cannot be used as an argument value. Use an anonymous object for an input object, or a list for a GraphQL list.");
+            case IEnumerable items:
+                AppendList(builder, items);
+                break;
+            case not null when value.GetType().IsClass:
+                builder.Append("{ ");
+                AppendArguments(builder, value);
+                builder.Append(" }");
+                break;
+            default:
+                builder.Append(FormatQueryArgument(value));
+                break;
+        }
+    }
+
+    private void AppendVariableReference(StringBuilder builder, GraphQLVariable reference)
+    {
+        if (HasParameters == false
+            || Parameters.TryGetValue(reference.Name, out var parameter) == false
+            || parameter.Value is null)
+        {
+            throw new InvalidOperationException(
+                $"Variable '${reference.Name}' is referenced but was never declared with a value. Declare it with AddVariable(\"{reference.Name}\", ...).");
+        }
+
+        builder.Append('$').Append(reference.Name);
+    }
+
+    private void AppendList(StringBuilder builder, IEnumerable items)
+    {
+        builder.Append("[ ");
+
+        var first = true;
+
+        foreach (var item in items)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                builder.Append(", ");
+            }
+
+            AppendValue(builder, item);
+        }
+
+        builder.Append(" ]");
+    }
+
+    private void AppendFields(StringBuilder builder, List<GraphQLQueryObjectField> fields)
+    {
+        foreach (var field in fields)
+        {
+            if (field.HasAliasName())
+            {
+                builder.Append(field.AliasName).Append(": ");
+            }
+
+            if (field.HasFields)
+            {
+                if (field.Arguments is not null)
+                {
+                    AppendCamelCase(builder, field.Name);
+                    builder.Append(" (");
+                    AppendArguments(builder, field.Arguments);
+                    builder.AppendLine(") {");
+                }
+                else
+                {
+                    AppendCamelCase(builder, field.Name);
+                    builder.AppendLine(" {");
+                }
+
+                AppendFields(builder, field.Fields);
+
+                builder.AppendLine("}");
+            }
+            else
+            {
+                AppendCamelCase(builder, field.Name);
+                builder.AppendLine();
+            }
+        }
+    }
+
+    private static void AppendCamelCase(StringBuilder builder, string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return;
+        }
+
+        var first = value[0];
+
+        if (char.IsUpper(first))
+        {
+            builder.Append(char.ToLowerInvariant(first));
+
+            if (value.Length > 1)
+            {
+                builder.Append(value, 1, value.Length - 1);
+            }
+        }
+        else
+        {
+            builder.Append(value);
+        }
+    }
+
+    private static string FormatQueryArgument(object value)
+    {
+        return value switch
+        {
+            bool booleanValue => booleanValue ? "true" : "false",
+            string stringValue => JsonSerializer.Serialize(stringValue, ArgumentSerializerOptions),
+            Guid guidValue => "\"" + guidValue + "\"",
+            DateTime dateTimeValue => "\"" + dateTimeValue.ToString("s", CultureInfo.InvariantCulture) + "\"",
+            float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
+            double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
+            decimal decimalValue => decimalValue.ToString(CultureInfo.InvariantCulture),
+            Enum enumValue => enumValue.ToString(),
+            _ => value.ToString()
+        };
+    }
+
 }

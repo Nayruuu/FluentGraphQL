@@ -3,15 +3,15 @@ using FluentGraphQL;
 using FluentGraphQL.Classes;
 using GraphQL.Query.Builder;
 
-namespace FluentQL.Benchmark.Benchmarks;
+namespace FluentGraphQL.Benchmark.Benchmarks;
 
 [MemoryDiagnoser]
 [WarmupCount(5)]
 [IterationCount(10)]
 public class GraphQLBuilderBenchmark
 {
-    [Benchmark(OperationsPerInvoke = 1000)]
-    public string FluentQL()
+    [Benchmark]
+    public string FluentGraphQL()
     {
         var builder = new GraphQLQueryBuilder();
         
@@ -40,7 +40,7 @@ public class GraphQLBuilderBenchmark
         return query;
     }
 
-    [Benchmark(OperationsPerInvoke = 1000)]
+    [Benchmark]
     public string GraphQLQueryBuilder()
     {
         var builder = new Query<Account>("accounts");

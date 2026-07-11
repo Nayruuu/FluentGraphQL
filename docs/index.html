@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="FluentGraphQL — API reference and interactive C# to GraphQL playground.">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure,pre,blockquote{margin:0}
+ul,ol{padding:0;list-style:none}
+button{font-family:inherit}
+img{max-width:100%;display:block}
+</style>
+<title>FluentGraphQL — API Reference</title>
+<style>
+  :root {
+    --bg: #F7F9FD;
+    --surface: #FFFFFF;
+    --surface-2: #EEF2FB;
+    --code-bg: #F4F7FE;
+    --ink: #141A27;
+    --ink-soft: #414A5E;
+    --muted: #6B7589;
+    --border: #E3E9F4;
+    --border-strong: #D2DAEA;
+    --accent: #1E47B5;
+    --accent-soft: #E6ECFB;
+    --accent-ink: #163A97;
+    --kw: #7A5CF0;
+    --ty: #1E47B5;
+    --str: #1E874B;
+    --num: #B4600A;
+    --shadow: 0 1px 2px rgba(16,28,60,.05), 0 10px 34px rgba(16,28,60,.08);
+    --shadow-soft: 0 1px 2px rgba(16,28,60,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D1220;
+      --surface: #141C2D;
+      --surface-2: #1C2740;
+      --code-bg: #131B2B;
+      --ink: #ECF1FA;
+      --ink-soft: #C1CADC;
+      --muted: #8A95AC;
+      --border: #253150;
+      --border-strong: #33436A;
+      --accent: #6E9BFF;
+      --accent-soft: #17233F;
+      --accent-ink: #A9C4FF;
+      --kw: #A995FF;
+      --ty: #6E9BFF;
+      --str: #5FD08C;
+      --num: #E5A85F;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 12px 40px rgba(0,0,0,.45);
+      --shadow-soft: 0 1px 2px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F9FD; --surface: #FFFFFF; --surface-2: #EEF2FB; --code-bg: #F4F7FE;
+    --ink: #141A27; --ink-soft: #414A5E; --muted: #6B7589; --border: #E3E9F4; --border-strong: #D2DAEA;
+    --accent: #1E47B5; --accent-soft: #E6ECFB; --accent-ink: #163A97;
+    --kw: #7A5CF0; --ty: #1E47B5; --str: #1E874B; --num: #B4600A;
+    --shadow: 0 1px 2px rgba(16,28,60,.05), 0 10px 34px rgba(16,28,60,.08); --shadow-soft: 0 1px 2px rgba(16,28,60,.04);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1220; --surface: #141C2D; --surface-2: #1C2740; --code-bg: #131B2B;
+    --ink: #ECF1FA; --ink-soft: #C1CADC; --muted: #8A95AC; --border: #253150; --border-strong: #33436A;
+    --accent: #6E9BFF; --accent-soft: #17233F; --accent-ink: #A9C4FF;
+    --kw: #A995FF; --ty: #6E9BFF; --str: #5FD08C; --num: #E5A85F;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 12px 40px rgba(0,0,0,.45); --shadow-soft: 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    scroll-padding-top: 84px;
+  }
+  code, pre, .mono, .sig { font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace; }
+  a { color: var(--accent-ink); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  /* ---- top bar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px clamp(16px, 4vw, 40px);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.02em; }
+  .brand .mark { width: 22px; height: 22px; flex: none; }
+  .brand b { color: var(--ink); }
+  .brand .fluent { color: var(--accent); }
+  .topbar .spacer { flex: 1; }
+  .pill {
+    font-family: ui-monospace, monospace; font-size: 12px; font-weight: 600;
+    padding: 4px 9px; border-radius: 999px; border: 1px solid var(--border-strong);
+    color: var(--ink-soft); background: var(--surface); white-space: nowrap;
+  }
+  .pill.accent { color: #fff; background: var(--accent); border-color: transparent; }
+  @media (prefers-color-scheme: dark) { .pill.accent { color: #0D1220; } }
+  :root[data-theme="dark"] .pill.accent { color: #1a0f16; }
+  .topbar .hide-sm { }
+  @media (max-width: 680px) { .topbar .hide-sm { display: none; } }
+
+  /* ---- hero ---- */
+  .hero { padding: clamp(40px, 7vw, 88px) clamp(16px, 4vw, 40px) clamp(28px, 4vw, 48px); max-width: 1180px; margin: 0 auto; }
+  .eyebrow {
+    font-family: ui-monospace, monospace; font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 18px;
+  }
+  .hero h1 {
+    font-size: clamp(2.3rem, 6vw, 4rem); line-height: 1.02; letter-spacing: -.035em;
+    margin: 0 0 20px; font-weight: 800; text-wrap: balance; max-width: 15ch;
+  }
+  .hero h1 .g { color: var(--accent); }
+  .hero .lede { font-size: clamp(1.05rem, 2vw, 1.28rem); color: var(--ink-soft); max-width: 60ch; margin: 0 0 26px; line-height: 1.5; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 0 0 8px; padding: 0; list-style: none; }
+  .stats li { display: flex; flex-direction: column; }
+  .stats .v { font-family: ui-monospace, monospace; font-size: 1.5rem; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+  .stats .k { font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* ---- code showcase ---- */
+  .showcase { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: stretch; }
+  @media (max-width: 860px) { .panels { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
+  }
+  .panel-head {
+    display: flex; align-items: center; gap: 8px; padding: 11px 15px;
+    border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--muted);
+  }
+  .panel-head .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); flex: none; }
+  .panel-head .lang { margin-left: auto; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: 11px; }
+  .panel-head .lang.cs { color: var(--kw); }
+  .panel-head .lang.gql { color: var(--accent); }
+  pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.72; color: var(--ink); flex: 1; }
+  pre code { font-size: inherit; }
+  .arrow-between { display: grid; place-items: center; }
+  .tok-k { color: var(--kw); }
+  .tok-t { color: var(--ty); }
+  .tok-s { color: var(--str); }
+  .tok-n { color: var(--num); }
+  .tok-c { color: var(--muted); font-style: italic; }
+  .tok-m { color: var(--ink); font-weight: 600; }
+  .tok-v { color: var(--accent); font-weight: 600; }
+  .tok-p { color: var(--muted); }
+
+  /* ---- main layout ---- */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: clamp(30px, 5vw, 56px) clamp(16px, 4vw, 40px) 80px; }
+  .layout { display: grid; grid-template-columns: 236px 1fr; gap: clamp(28px, 4vw, 56px); align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidenav { display: none; } }
+
+  .sidenav { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; padding-right: 6px; }
+  .sidenav .group { margin-bottom: 20px; }
+  .sidenav .group > span {
+    display: block; font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .13em; color: var(--muted); margin: 0 0 8px; font-weight: 700;
+  }
+  .sidenav a { display: block; color: var(--ink-soft); padding: 4px 10px; border-radius: 7px; font-size: 14px; line-height: 1.4; }
+  .sidenav a code { font-size: 13px; color: inherit; }
+  .sidenav a:hover { background: var(--surface-2); text-decoration: none; color: var(--ink); }
+
+  .content { min-width: 0; }
+  .section { margin-bottom: 56px; scroll-margin-top: 80px; }
+  .section-eyebrow {
+    font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 6px;
+  }
+  .section > h2 { font-size: 1.05rem; margin: 0 0 18px; color: var(--muted); font-weight: 600; letter-spacing: .01em; }
+
+  .type-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: var(--shadow-soft); overflow: hidden; margin-bottom: 22px;
+  }
+  .type-head { padding: 20px 22px 18px; border-bottom: 1px solid var(--border); }
+  .type-head .kind {
+    display: inline-block; font-family: ui-monospace, monospace; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: var(--accent-ink);
+    background: var(--accent-soft); padding: 3px 9px; border-radius: 6px; margin-bottom: 12px;
+  }
+  .type-head h3 { margin: 0 0 8px; font-size: 1.5rem; letter-spacing: -.02em; }
+  .type-head h3 code { font-family: ui-monospace, monospace; font-size: 1.35rem; color: var(--ink); }
+  .type-head h3 .tg { color: var(--accent); }
+  .type-head p { margin: 0; color: var(--ink-soft); max-width: 68ch; }
+  .type-head p code { background: var(--surface-2); padding: 1px 6px; border-radius: 5px; font-size: .86em; color: var(--accent-ink); }
+
+  .members { padding: 6px 0; }
+  .member { padding: 18px 22px; border-top: 1px solid var(--border); }
+  .member:first-child { border-top: none; }
+  .member-head { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 9px; }
+  .sig {
+    font-size: 13.5px; line-height: 1.6; color: var(--ink); background: var(--code-bg);
+    border: 1px solid var(--border); border-radius: 9px; padding: 9px 13px; overflow-x: auto;
+    flex: 1; min-width: 0; white-space: pre; scrollbar-width: thin;
+  }
+  .badge {
+    font-family: ui-monospace, monospace; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    padding: 4px 8px; border-radius: 6px; white-space: nowrap; margin-top: 2px;
+    color: var(--muted); background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .badge.prop { color: #1E874B; }
+  .badge.ctor { color: var(--kw); }
+  @media (prefers-color-scheme: dark){ .badge.prop { color: #74D89E; } }
+  :root[data-theme="dark"] .badge.prop { color: #74D89E; }
+
+  .summary { margin: 0 0 12px; color: var(--ink-soft); }
+  .summary code, .desc code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .85em; color: var(--accent-ink); }
+  .summary a, .desc a { border-bottom: 1px dotted currentColor; }
+
+  .params { margin: 0 0 10px; display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .param { display: grid; grid-template-columns: minmax(120px, 190px) 1fr; gap: 0; border-top: 1px solid var(--border); }
+  .param:first-child { border-top: none; }
+  .param .pn { padding: 8px 13px; background: var(--surface-2); font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--ty); display: flex; align-items: flex-start; gap: 7px; flex-wrap: wrap; }
+  .param .pd { padding: 8px 13px; color: var(--ink-soft); font-size: 14.5px; min-width: 0; }
+  .param .pd code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .84em; color: var(--accent-ink); }
+  @media (max-width: 560px) { .param { grid-template-columns: 1fr; } .param .pn { border-bottom: 1px solid var(--border); } }
+  .tag-auto {
+    font-family: ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--muted); background: var(--bg); border: 1px solid var(--border-strong); padding: 1px 5px; border-radius: 5px;
+  }
+
+  .meta { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .meta-row { display: flex; gap: 10px; align-items: baseline; font-size: 14.5px; color: var(--ink-soft); }
+  .meta-label {
+    font-family: ui-monospace, monospace; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    padding: 2px 7px; border-radius: 5px; flex: none; margin-top: 1px;
+  }
+  .meta-label.ret { color: var(--accent-ink); background: var(--accent-soft); }
+  .meta-label.thr { color: var(--num); background: color-mix(in srgb, var(--num) 14%, transparent); }
+  .meta-row code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+
+  .enum-values { display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 0 2px; }
+  .enum-values code {
+    font-size: 12px; padding: 4px 9px; border-radius: 7px; background: var(--surface-2);
+    border: 1px solid var(--border); color: var(--ink-soft);
+  }
+
+  footer { border-top: 1px solid var(--border); padding: 28px clamp(16px,4vw,40px) 48px; max-width: 1180px; margin: 0 auto; color: var(--muted); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+  footer .mono { font-family: ui-monospace, monospace; }
+  footer .spacer { flex: 1; }
+
+  /* ---- playground ---- */
+  .playground { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  .pg-inner { max-width: 1180px; margin: 0 auto; padding: clamp(40px, 6vw, 76px) clamp(16px, 4vw, 40px); }
+  .pg-head { margin-bottom: 22px; }
+  .pg-title { font-size: clamp(1.5rem, 3.4vw, 2.15rem); letter-spacing: -.025em; margin: .25em 0 .35em; color: var(--ink); font-weight: 800; text-wrap: balance; }
+  .pg-note { color: var(--ink-soft); max-width: 72ch; margin: 0 0 18px; }
+  .pg-note code { background: var(--surface); padding: 1px 5px; border-radius: 4px; font-size: .85em; color: var(--accent-ink); }
+  .pg-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .pg-presets .lbl { font-family: ui-monospace, monospace; text-transform: uppercase; letter-spacing: .12em; font-size: 11px; color: var(--muted); margin-right: 2px; }
+  .pg-presets button {
+    font-family: inherit; font-size: 13px; padding: 6px 13px; border-radius: 999px;
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink-soft); cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .pg-presets button:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .pg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: stretch; }
+  @media (max-width: 900px) { .pg-grid { grid-template-columns: 1fr; } }
+  .pg-pane { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; min-height: 360px; }
+  .pg-pane-head { display: flex; align-items: center; gap: 8px; padding: 11px 15px; border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--muted); }
+  .pg-pane-head .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); flex: none; }
+  .pg-pane-head .lang { margin-left: auto; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: 11px; }
+  .pg-pane-head .lang.cs { color: var(--kw); }
+  .pg-pane-head .lang.gql { color: var(--accent); }
+  #pg-input {
+    flex: 1; border: 0; resize: vertical; padding: 16px 18px;
+    font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 13px; line-height: 1.72; color: var(--ink); background: transparent; outline: none;
+    tab-size: 4; min-height: 300px; width: 100%;
+  }
+  #pg-input::selection { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+  #pg-output { margin: 0; padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.72; flex: 1; color: var(--ink); white-space: pre; }
+  #pg-vars-wrap { border-top: 1px dashed var(--border); }
+  #pg-vars-wrap.empty { display: none; }
+  .pg-vars-label { font-family: ui-monospace, monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 9px 18px 0; }
+  #pg-vars { margin: 0; padding: 4px 18px 15px; font-size: 12.5px; overflow-x: auto; color: var(--ink-soft); white-space: pre; }
+  #pg-error {
+    display: none; padding: 12px 18px; border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--num) 13%, transparent); color: var(--num);
+    font-family: ui-monospace, monospace; font-size: 12.5px; white-space: pre-wrap; line-height: 1.5;
+  }
+  #pg-error.show { display: block; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="5" style="color: var(--accent)">
+        <polygon points="50,10 86,30 86,70 50,90 14,70 14,30" />
+        <path d="M50,10 L14,70 M50,10 L86,70 M14,30 L86,30 M14,70 L86,70 M50,10 L50,90 M14,30 L86,70 M86,30 L14,70" stroke-width="2.5" opacity="0.55"/>
+      </g>
+      <g fill="var(--accent)">
+        <circle cx="50" cy="10" r="7"/><circle cx="86" cy="30" r="7"/><circle cx="86" cy="70" r="7"/>
+        <circle cx="50" cy="90" r="7"/><circle cx="14" cy="70" r="7"/><circle cx="14" cy="30" r="7"/>
+      </g>
+    </svg>
+    <span><b>Fluent</b><span class="fluent">GraphQL</span></span>
+  </span>
+  <span class="spacer"></span>
+  <span class="pill hide-sm">netstandard2.1</span>
+  <span class="pill accent">v2.0.0</span>
+</header>
+
+<section class="hero">
+  <p class="eyebrow">API Reference</p>
+  <h1>Type-safe <span class="g">GraphQL</span>, written as a fluent chain.</h1>
+  <p class="lede">Describe a query with lambda selectors and anonymous arguments — get a valid, escaped GraphQL document plus its variables. No expression trees, no reflection on the hot path.</p>
+  <ul class="stats">
+    <li><span class="v">~8×</span><span class="k">faster than peer</span></li>
+    <li><span class="v">~6.5×</span><span class="k">less allocation</span></li>
+    <li><span class="v">51</span><span class="k">tests, parser-checked</span></li>
+    <li><span class="v">0</span><span class="k">runtime dependencies</span></li>
+  </ul>
+</section>
+
+<section class="showcase">
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-head"><span class="dot"></span><span>Program.cs</span><span class="lang cs">C#</span></div>
+<pre><code><span class="tok-k">var</span> builder = <span class="tok-k">new</span> <span class="tok-t">GraphQLQueryBuilder</span>();
+
+builder
+    .<span class="tok-m">AddVariable</span>(<span class="tok-s">"cities"</span>, <span class="tok-t">GraphQLParameterType</span>.<span class="tok-v">STRING_ARRAY</span>, <span class="tok-k">new</span>[] { <span class="tok-s">"Paris"</span> })
+    .<span class="tok-m">AddQuery</span>(<span class="tok-k">new</span> <span class="tok-t">GraphQLQueryObject</span>&lt;<span class="tok-t">Account</span>&gt;(<span class="tok-s">"accounts"</span>)
+        .<span class="tok-m">AddField</span>(a =&gt; a.Id)
+        .<span class="tok-m">AddField</span>(a =&gt; a.SocietyName)
+        .<span class="tok-m">AddCollectionField</span>(a =&gt; a.Contacts, c =&gt; c
+            .<span class="tok-m">AddField</span>(x =&gt; x.Email))
+        .<span class="tok-m">WithArguments</span>(<span class="tok-k">new</span> { where = <span class="tok-k">new</span> { city = <span class="tok-k">new</span> { @in = <span class="tok-m">Var</span>(<span class="tok-s">"cities"</span>) } } }));
+
+<span class="tok-k">string</span> query = builder.<span class="tok-v">Query</span>;</code></pre>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="dot"></span><span>output.graphql</span><span class="lang gql">GraphQL</span></div>
+<pre><code><span class="tok-k">query</span> ($<span class="tok-v">cities</span>: <span class="tok-t">[String]!</span>) {
+  <span class="tok-m">accounts</span>(where: { city: { in: $<span class="tok-v">cities</span> } }) {
+    id
+    societyName
+    <span class="tok-m">contacts</span> {
+      email
+    }
+  }
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="playground" id="playground">
+  <div class="pg-inner">
+    <div class="pg-head">
+      <p class="section-eyebrow">Playground</p>
+      <h2 class="pg-title">Write the fluent C#. See the GraphQL, live.</h2>
+      <p class="pg-note">A faithful JavaScript port of the generation rules — camelCasing, <code>$variables</code>, list &amp; scalar formatting, escaping, fail-fast on an undeclared variable. It is <em>not</em> the compiled .NET library (which can't run in a sandboxed page); a practical subset of the fluent syntax is supported. Sample schema: <code>Account</code>, <code>Contact</code>, <code>Task</code>, <code>Adresse</code>.</p>
+      <div class="pg-presets">
+        <span class="lbl">Examples</span>
+        <button type="button" data-preset="nested">Variables &amp; arguments</button>
+        <button type="button" data-preset="every">Every fields</button>
+        <button type="button" data-preset="mutation">Mutation</button>
+      </div>
+    </div>
+    <div class="pg-grid">
+      <div class="pg-pane">
+        <div class="pg-pane-head"><span class="dot"></span><span>Program.cs</span><span class="lang cs">C#</span></div>
+        <textarea id="pg-input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Fluent C# source"></textarea>
+      </div>
+      <div class="pg-pane">
+        <div class="pg-pane-head"><span class="dot"></span><span>output.graphql</span><span class="lang gql">GraphQL</span></div>
+        <pre id="pg-output"><code></code></pre>
+        <div id="pg-vars-wrap" class="empty"><div class="pg-vars-label">Variables</div><pre id="pg-vars"><code></code></pre></div>
+        <div id="pg-error"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="layout">
+    <nav class="sidenav" aria-label="API navigation">
+      <div class="group">
+        <span>Try it</span>
+        <a href="#playground">Playground</a>
+      </div>
+      <div class="group">
+        <span>Entry point</span>
+        <a href="#GraphQL"><code>GraphQL.Var</code></a>
+      </div>
+      <div class="group">
+        <span>Builder</span>
+        <a href="#GraphQLQueryBuilder"><code>GraphQLQueryBuilder</code></a>
+      </div>
+      <div class="group">
+        <span>Selection</span>
+        <a href="#GraphQLQueryObject"><code>GraphQLQueryObject&lt;T&gt;</code></a>
+        <a href="#GraphQLQueryObjectField"><code>GraphQLQueryObjectField&lt;T&gt;</code></a>
+      </div>
+      <div class="group">
+        <span>Variables</span>
+        <a href="#GraphQLVariable"><code>GraphQLVariable</code></a>
+        <a href="#GraphQLParameter"><code>GraphQLParameter</code></a>
+        <a href="#GraphQLParameterType"><code>GraphQLParameterType</code></a>
+      </div>
+      <div class="group">
+        <span>Request</span>
+        <a href="#GraphQLRequest"><code>GraphQLRequest</code></a>
+        <a href="#GraphQLRequestData"><code>GraphQLRequestData&lt;T&gt;</code></a>
+      </div>
+      <div class="group">
+        <span>Base types</span>
+        <a href="#bases"><code>GraphQLObject</code>, …</a>
+      </div>
+    </nav>
+
+    <main class="content">
+
+      <!-- ENTRY POINT -->
+      <section class="section" id="GraphQL">
+        <p class="section-eyebrow">Entry point</p>
+        <h2>Where a query starts — and where variables are referenced.</h2>
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">static class</span>
+            <h3><code>GraphQL</code></h3>
+            <p>Static entry points for the fluent GraphQL API. A string that is <em>not</em> a <code>Var</code> is always treated as a literal, escaped value.</p>
+          </div>
+          <div class="members">
+            <div class="member">
+              <div class="member-head">
+                <code class="sig"><span class="tok-k">static</span> <span class="tok-t">GraphQLVariable</span> <span class="tok-m">Var</span>(<span class="tok-k">string</span> name)</code>
+                <span class="badge">method</span>
+              </div>
+              <p class="summary">References a variable previously declared with <code>AddVariable</code>. Rendered as <code>$name</code>.</p>
+              <div class="params">
+                <div class="param"><div class="pn">name</div><div class="pd">The variable name (without the leading <code>$</code>) to reference.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>A reference usable inside an argument object, rendered as <code>$name</code>.</span></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUILDER -->
+      <section class="section" id="GraphQLQueryBuilder">
+        <p class="section-eyebrow">Builder</p>
+        <h2>Assembles the document and its variables.</h2>
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">class</span>
+            <h3><code>GraphQLQueryBuilder</code></h3>
+            <p>Builds a GraphQL query or mutation and its variables from a fluent, strongly-typed description. Configure it on one thread; once configured, <code>Query</code> and <code>Variables</code> may be read concurrently — they allocate their own output and never mutate shared state. Do not add queries or variables while another thread is reading.</p>
+          </div>
+          <div class="members">
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryBuilder</span>(<span class="tok-k">bool</span> mutation = <span class="tok-k">false</span>)</code><span class="badge ctor">constructor</span></div>
+              <p class="summary">Creates a builder for a query, or for a mutation when <code>mutation</code> is true.</p>
+              <div class="params"><div class="param"><div class="pn">mutation</div><div class="pd">Whether to emit a <code>mutation</code> rather than a <code>query</code>.</div></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-k">string</span> <span class="tok-v">Query</span> { <span class="tok-k">get</span>; }</code><span class="badge prop">property</span></div>
+              <p class="summary">The generated GraphQL document. Built on each access.</p>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">JsonObject</span> <span class="tok-v">Variables</span> { <span class="tok-k">get</span>; }</code><span class="badge prop">property</span></div>
+              <p class="summary">The declared variables and their values, camelCased, ready to send alongside <code>Query</code>.</p>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLRequest</span> <span class="tok-v">Request</span> { <span class="tok-k">get</span>; }</code><span class="badge prop">property</span></div>
+              <p class="summary">The <code>Query</code> and <code>Variables</code> bundled as a request payload.</p>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-k">int</span> <span class="tok-v">QueriesCount</span> { <span class="tok-k">get</span>; }</code><span class="badge prop">property</span></div>
+              <p class="summary">The number of root queries (or mutations) currently added.</p>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryBuilder</span> <span class="tok-m">AddQuery</span>&lt;<span class="tok-t">T</span>&gt;(<span class="tok-t">GraphQLQueryObject</span>&lt;<span class="tok-t">T</span>&gt; queryObject)</code><span class="badge">method</span></div>
+              <p class="summary">Adds a root query (or mutation) object.</p>
+              <div class="params">
+                <div class="param"><div class="pn">T <span class="tag-auto">type</span></div><div class="pd">The type selected by the query object.</div></div>
+                <div class="param"><div class="pn">queryObject</div><div class="pd">The root query to add.</div></div>
+              </div>
+              <div class="meta">
+                <div class="meta-row"><span class="meta-label ret">returns</span><span>The same builder, to continue chaining.</span></div>
+                <div class="meta-row"><span class="meta-label thr">throws</span><span><code>InvalidOperationException</code> — a query with the same name or alias was already added.</span></div>
+              </div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryBuilder</span> <span class="tok-m">AddVariable</span>(<span class="tok-k">string</span> name, <span class="tok-k">object</span> value)</code><span class="badge">method</span></div>
+              <p class="summary">Declares a variable, inferring its GraphQL type from the value's CLR type.</p>
+              <div class="params">
+                <div class="param"><div class="pn">name</div><div class="pd">The variable name (without the leading <code>$</code>).</div></div>
+                <div class="param"><div class="pn">value</div><div class="pd">The variable value; its CLR type determines the GraphQL type.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same builder, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryBuilder</span> <span class="tok-m">AddVariable</span>(<span class="tok-k">string</span> name, <span class="tok-t">GraphQLParameterType</span> type, <span class="tok-k">object</span> value)</code><span class="badge">method</span></div>
+              <p class="summary">Declares a variable with an explicit GraphQL type, rather than inferring it from the value.</p>
+              <div class="params">
+                <div class="param"><div class="pn">name</div><div class="pd">The variable name (without the leading <code>$</code>).</div></div>
+                <div class="param"><div class="pn">type</div><div class="pd">The explicit GraphQL type of the variable.</div></div>
+                <div class="param"><div class="pn">value</div><div class="pd">The variable value.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same builder, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryBuilder</span> <span class="tok-m">AddVariable</span>(<span class="tok-t">GraphQLParameter</span> parameter)</code><span class="badge">method</span></div>
+              <p class="summary">Declares a variable from a pre-built parameter.</p>
+              <div class="params"><div class="param"><div class="pn">parameter</div><div class="pd">The variable to declare.</div></div></div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same builder, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryBuilder</span> <span class="tok-m">AddVariables</span>(<span class="tok-k">params</span> <span class="tok-t">GraphQLParameter</span>[] parameters)</code><span class="badge">method</span></div>
+              <p class="summary">Declares several variables in one call.</p>
+              <div class="params"><div class="param"><div class="pn">parameters</div><div class="pd">The variables to declare.</div></div></div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same builder, to continue chaining.</span></div></div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- SELECTION -->
+      <section class="section" id="GraphQLQueryObject">
+        <p class="section-eyebrow">Selection · root</p>
+        <h2>Selects fields on a root query object.</h2>
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">class</span>
+            <h3><code>GraphQLQueryObject<span class="tg">&lt;T&gt;</span></code></h3>
+            <p>A root query (or mutation) object selecting fields of <code>T</code>. <code>T</code> is the type whose fields are selected.</p>
+          </div>
+          <div class="members">
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">GraphQLQueryObject</span>&lt;<span class="tok-t">T</span>&gt;(<span class="tok-k">string</span> name)</code><span class="badge ctor">constructor</span></div>
+              <p class="summary">Creates a query object for the given GraphQL field name.</p>
+              <div class="params"><div class="param"><div class="pn">name</div><div class="pd">The GraphQL field name this query targets.</div></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddField</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">TProperty</span>&gt; selector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a scalar field, e.g. <code>AddField(x =&gt; x.Id)</code>.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Type of the selected field.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The field to select, e.g. <code>x =&gt; x.Id</code>.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddField</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">TProperty</span>&gt; selector, <span class="tok-t">Func</span>&lt;…&gt; complexPropertySelector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a nested object field and its sub-selection, e.g. <code>AddField(x =&gt; x.Adresse, a =&gt; a.AddField(v =&gt; v.City))</code>.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Type of the nested object field.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The nested field to select, e.g. <code>x =&gt; x.Adresse</code>.</div></div>
+                <div class="param"><div class="pn">complexPropertySelector</div><div class="pd">Builds the sub-selection of the nested field.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddCollectionField</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">IEnumerable</span>&lt;<span class="tok-t">TProperty</span>&gt;&gt; selector, <span class="tok-t">Func</span>&lt;…&gt; complexPropertySelector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a collection field and its sub-selection, e.g. <code>AddCollectionField(x =&gt; x.Contacts, c =&gt; c.AddEveryFields())</code>.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Element type of the selected collection.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The collection to select, e.g. <code>x =&gt; x.Contacts</code>.</div></div>
+                <div class="param"><div class="pn">complexPropertySelector</div><div class="pd">Builds the sub-selection of each element.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">WithArguments</span>&lt;<span class="tok-t">TArguments</span>&gt;(<span class="tok-t">TArguments</span> arguments)</code><span class="badge">method</span></div>
+              <p class="summary">Sets the query arguments from an anonymous object. Use <a href="#GraphQL">Var</a> for variable references.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TArguments <span class="tag-auto">type</span></div><div class="pd">Type of the arguments object.</div></div>
+                <div class="param"><div class="pn">arguments</div><div class="pd">The arguments as an anonymous object, e.g. <code>new { where = new { id = new { eq = 1 } } }</code>.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">As</span>(<span class="tok-k">string</span> aliasName)</code><span class="badge">method</span></div>
+              <p class="summary">Gives this query an alias (rendered as <code>alias: name</code>).</p>
+              <div class="params"><div class="param"><div class="pn">aliasName</div><div class="pd">The alias; ignored when null or whitespace.</div></div></div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddEveryFields</span>()</code><span class="badge">method</span></div>
+              <p class="summary">Selects every scalar and enum property of <code>T</code>.</p>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">Except</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">TProperty</span>&gt; selector)</code><span class="badge">method</span></div>
+              <p class="summary">Removes a previously selected field (e.g. after <code>AddEveryFields</code>).</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Type of the field being removed.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The field to remove, e.g. <code>x =&gt; x.Name</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same query object, to continue chaining.</span></div></div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="GraphQLQueryObjectField">
+        <p class="section-eyebrow">Selection · nested</p>
+        <h2>Selects sub-fields inside a nested object or collection.</h2>
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">class</span>
+            <h3><code>GraphQLQueryObjectField<span class="tg">&lt;T&gt;</span></code></h3>
+            <p>Builds the sub-selection of a nested object or collection field of element type <code>T</code>. The non-generic <code>GraphQLQueryObjectField</code> is a selected field that may itself carry a nested selection.</p>
+          </div>
+          <div class="members">
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddField</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">TProperty</span>&gt; selector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a scalar sub-field.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Type of the selected sub-field.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The sub-field to select, e.g. <code>x =&gt; x.Id</code>.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same field, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddField</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">TProperty</span>&gt; selector, <span class="tok-t">Func</span>&lt;…&gt; complexPropertySelector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a nested object sub-field and its sub-selection.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Type of the nested object sub-field.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The nested sub-field to select, e.g. <code>x =&gt; x.Adresse</code>.</div></div>
+                <div class="param"><div class="pn">complexPropertySelector</div><div class="pd">Builds the sub-selection of the nested field.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same field, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddCollectionField</span>&lt;<span class="tok-t">TProperty</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">IEnumerable</span>&lt;<span class="tok-t">TProperty</span>&gt;&gt; selector, <span class="tok-t">Func</span>&lt;…&gt; complexPropertySelector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a nested collection field and its sub-selection.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Element type of the nested collection.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The collection to select, e.g. <code>x =&gt; x.Tasks</code>.</div></div>
+                <div class="param"><div class="pn">complexPropertySelector</div><div class="pd">Builds the sub-selection of each element.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same field, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddField</span>&lt;<span class="tok-t">TProperty</span>, <span class="tok-t">TArguments</span>&gt;(<span class="tok-t">Func</span>&lt;<span class="tok-t">T</span>, <span class="tok-t">IEnumerable</span>&lt;<span class="tok-t">TProperty</span>&gt;&gt; selector, <span class="tok-t">TArguments</span> arguments, <span class="tok-t">Func</span>&lt;…&gt; complexPropertySelector, <span class="tok-k">string</span> aliasName = <span class="tok-k">null</span>)</code><span class="badge">method</span></div>
+              <p class="summary">Selects a nested collection field carrying its own arguments, plus its sub-selection.</p>
+              <div class="params">
+                <div class="param"><div class="pn">TProperty <span class="tag-auto">type</span></div><div class="pd">Element type of the nested collection.</div></div>
+                <div class="param"><div class="pn">TArguments <span class="tag-auto">type</span></div><div class="pd">Type of the arguments object.</div></div>
+                <div class="param"><div class="pn">selector</div><div class="pd">The collection to select, e.g. <code>x =&gt; x.Tasks</code>.</div></div>
+                <div class="param"><div class="pn">arguments</div><div class="pd">The field arguments as an anonymous object; use <a href="#GraphQL">Var</a> for variable references.</div></div>
+                <div class="param"><div class="pn">complexPropertySelector</div><div class="pd">Builds the sub-selection of each element.</div></div>
+                <div class="param"><div class="pn">aliasName</div><div class="pd">Optional alias rendered as <code>alias: field</code>.</div></div>
+                <div class="param"><div class="pn">selectorText <span class="tag-auto">auto</span></div><div class="pd">Compiler-supplied from <code>selector</code>; leave unset.</div></div>
+              </div>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same field, to continue chaining.</span></div></div>
+            </div>
+
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-t">…&lt;T&gt;</span> <span class="tok-m">AddEveryFields</span>()</code><span class="badge">method</span></div>
+              <p class="summary">Selects every scalar and enum property of <code>T</code>.</p>
+              <div class="meta"><div class="meta-row"><span class="meta-label ret">returns</span><span>The same field, to continue chaining.</span></div></div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- VARIABLES -->
+      <section class="section" id="GraphQLVariable">
+        <p class="section-eyebrow">Variables</p>
+        <h2>The variable value types.</h2>
+
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">sealed class</span>
+            <h3><code>GraphQLVariable</code></h3>
+            <p>A reference to a declared GraphQL variable, produced by <a href="#GraphQL">GraphQL.Var</a>. Pass it inside an arguments object to render <code>$name</code>.</p>
+          </div>
+        </div>
+
+        <div class="type-card" id="GraphQLParameter">
+          <div class="type-head">
+            <span class="kind">class</span>
+            <h3><code>GraphQLParameter</code></h3>
+            <p>A declared GraphQL variable: its name, value, and (optionally) explicit type. A null <code>Type</code> means the type is inferred from the value.</p>
+          </div>
+        </div>
+
+        <div class="type-card" id="GraphQLParameterType">
+          <div class="type-head">
+            <span class="kind">enum</span>
+            <h3><code>GraphQLParameterType</code></h3>
+            <p>Explicit GraphQL type of a variable, used by the <code>AddVariable(name, type, value)</code> overload.</p>
+            <div class="enum-values">
+              <code>INT</code><code>FLOAT</code><code>STRING</code><code>BOOLEAN</code><code>DATETIME</code><code>UUID</code>
+              <code>INT_ARRAY</code><code>FLOAT_ARRAY</code><code>STRING_ARRAY</code><code>DATETIME_ARRAY</code><code>OBJECT</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REQUEST -->
+      <section class="section" id="GraphQLRequest">
+        <p class="section-eyebrow">Request</p>
+        <h2>Sending and receiving.</h2>
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">class</span>
+            <h3><code>GraphQLRequest</code></h3>
+            <p>A GraphQL request payload: the query document and its variables. Read it straight off the builder via <code>builder.Request</code>.</p>
+          </div>
+        </div>
+        <div class="type-card" id="GraphQLRequestData">
+          <div class="type-head">
+            <span class="kind">class</span>
+            <h3><code>GraphQLRequestData<span class="tg">&lt;T&gt;</span></code></h3>
+            <p>Envelope for deserializing a GraphQL response's <code>data</code> field into <code>T</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- BASES -->
+      <section class="section" id="bases">
+        <p class="section-eyebrow">Base types</p>
+        <h2>Shared foundations — rarely used directly.</h2>
+        <div class="type-card">
+          <div class="type-head">
+            <span class="kind">abstract</span>
+            <h3><code>GraphQLObject</code></h3>
+            <p>Base for anything that has a name, an optional alias, arguments and a nested field selection.</p>
+          </div>
+          <div class="members">
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-k">abstract</span> <span class="tok-t">GraphQLBuilder</span></code><span class="badge">abstract</span></div>
+              <p class="summary">Base builder holding the declared variables shared by query and mutation builders.</p>
+            </div>
+            <div class="member">
+              <div class="member-head"><code class="sig"><span class="tok-k">abstract</span> <span class="tok-t">GraphQLQueryObject</span></code><span class="badge">abstract</span></div>
+              <p class="summary">Non-generic base for root query objects, so a builder can hold queries of different types.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<footer>
+  <span class="brand"><b>Fluent</b><span class="fluent">GraphQL</span></span>
+  <span class="mono">v2.0.0 · netstandard2.1</span>
+  <span class="spacer"></span>
+  <span>Generated from XML documentation comments · 24 documented members</span>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- sample schema (mirrors the demo domain) ----
+  var SCHEMA = {
+    Account: { Id: "Guid", SocietyName: "string", Adresse: "Adresse", Contacts: "[Contact]" },
+    Contact: { Id: "Guid", FirstName: "string", LastName: "string", Email: "string", PhoneNumber: "string", Tasks: "[Task]" },
+    Task:    { Id: "int", Name: "string", Description: "string", StartDate: "DateTime", DueDate: "DateTime" },
+    Adresse: { StreetNumber: "string", ZipCode: "string", City: "string", Latitude: "decimal", Longitude: "decimal" }
+  };
+  var SCALARS = { Guid: 1, string: 1, int: 1, DateTime: 1, decimal: 1, double: 1, float: 1, bool: 1, long: 1 };
+  var TYPE_STR = {
+    INT: "Int!", FLOAT: "Float!", STRING: "String!", BOOLEAN: "Boolean!", DATETIME: "DateTime!", UUID: "UUID!",
+    INT_ARRAY: "[Int]!", FLOAT_ARRAY: "[Float]!", STRING_ARRAY: "[String]!", DATETIME_ARRAY: "[DateTime!]!", OBJECT: null
+  };
+  var GraphQLParameterType = {
+    INT: "INT", FLOAT: "FLOAT", STRING: "STRING", BOOLEAN: "BOOLEAN", DATETIME: "DATETIME", UUID: "UUID",
+    INT_ARRAY: "INT_ARRAY", FLOAT_ARRAY: "FLOAT_ARRAY", STRING_ARRAY: "STRING_ARRAY", DATETIME_ARRAY: "DATETIME_ARRAY", OBJECT: "OBJECT"
+  };
+  var TYPE_DECL = { string: 1, int: 1, bool: 1, double: 1, decimal: 1, "float": 1, "long": 1 };
+
+  function isScalar(t) { return !!SCALARS[String(t).replace("?", "")]; }
+  function elementType(t) { var m = /^\[(.+)\]$/.exec(t); return m ? m[1] : t; }
+  function camel(s) { return (s && /[A-Z]/.test(s[0])) ? s[0].toLowerCase() + s.slice(1) : s; }
+  function pad(d) { return new Array(d + 1).join("  "); }
+
+  function Var(name) { return { __var: name }; }
+  function __named(name, obj) { Object.defineProperty(obj, "__typeName", { value: name, enumerable: false }); return obj; }
+  var nameProxy = new Proxy({}, { get: function (_, p) { return typeof p === "symbol" ? p : String(p); } });
+
+  var __lastBuilder = null;
+
+  // ---- value rendering (mirrors AppendValue / FormatQueryArgument) ----
+  function formatValue(v, vars) {
+    if (v === null || v === undefined) { return "null"; }
+    if (typeof v === "object" && v.__var) {
+      var f = null, i;
+      for (i = 0; i < vars.length; i++) { if (vars[i].name === v.__var && vars[i].value !== null && vars[i].value !== undefined) { f = vars[i]; break; } }
+      if (!f) { throw new Error("Variable '$" + v.__var + "' is referenced but was never declared with a value. Declare it with AddVariable(\"" + v.__var + "\", ...)."); }
+      return "$" + v.__var;
+    }
+    if (typeof v === "string") { return JSON.stringify(v); }
+    if (typeof v === "boolean") { return v ? "true" : "false"; }
+    if (typeof v === "number") { return String(v); }
+    if (Array.isArray(v)) { return "[ " + v.map(function (x) { return formatValue(x, vars); }).join(", ") + " ]"; }
+    if (typeof v === "object") {
+      var parts = [];
+      Object.keys(v).forEach(function (k) { if (k !== "__typeName") { parts.push(camel(k) + ": " + formatValue(v[k], vars)); } });
+      return "{ " + parts.join(", ") + " }";
+    }
+    return String(v);
+  }
+  function scalarName(val) {
+    if (typeof val === "string") { return "String"; }
+    if (typeof val === "boolean") { return "Boolean"; }
+    if (typeof val === "number") { return Number.isInteger(val) ? "Int" : "Float"; }
+    if (val && val.__typeName) { return val.__typeName; }
+    return "String";
+  }
+  function inferType(val) {
+    if (Array.isArray(val)) { return "[" + (val.length ? scalarName(val[0]) : "String") + "]!"; }
+    return scalarName(val) + "!";
+  }
+  function typeStr(v) {
+    if (v.type && v.type !== "OBJECT") { return TYPE_STR[v.type] || "String!"; }
+    if (v.type === "OBJECT") { return (v.value && v.value.__typeName ? v.value.__typeName : "Object") + "!"; }
+    return inferType(v.value);
+  }
+
+  // ---- fluent classes (JS port) ----
+  function Field(name, alias) { this.name = name; this.alias = alias || null; this.fields = []; this.args = undefined; this.typeName = null; }
+  Field.prototype._add = function (f) {
+    var key = f.alias || f.name, i;
+    for (i = 0; i < this.fields.length; i++) { if ((this.fields[i].alias || this.fields[i].name) === key) { this.fields[i] = f; return f; } }
+    this.fields.push(f); return f;
+  };
+  Field.prototype._childType = function (fieldName) {
+    var t = SCHEMA[this.typeName]; if (!t || !t[fieldName]) { return null; }
+    return elementType(String(t[fieldName]).replace("?", ""));
+  };
+  Field.prototype.AddField = function (selector, a, b) {
+    var name = selector(nameProxy);
+    if (typeof a === "function") {
+      var sub = new Field(name, typeof b === "string" ? b : null);
+      sub.typeName = this._childType(name); a(sub); this._add(sub);
+    } else {
+      this._add(new Field(name, typeof a === "string" ? a : null));
+    }
+    return this;
+  };
+  Field.prototype.AddCollectionField = function (selector, complex, alias) {
+    var name = selector(nameProxy);
+    var sub = new Field(name, typeof alias === "string" ? alias : null);
+    sub.typeName = this._childType(name); complex(sub); this._add(sub);
+    return this;
+  };
+  Field.prototype.AddEveryFields = function () {
+    var t = SCHEMA[this.typeName], self = this;
+    if (t) { Object.keys(t).forEach(function (k) { if (isScalar(t[k])) { self._add(new Field(k, null)); } }); }
+    return this;
+  };
+
+  function GraphQLQueryObject(typeName, name) { Field.call(this, name, null); this.typeName = typeName; }
+  GraphQLQueryObject.prototype = Object.create(Field.prototype);
+  GraphQLQueryObject.prototype.constructor = GraphQLQueryObject;
+  GraphQLQueryObject.prototype.As = function (alias) { if (alias && alias.trim()) { this.alias = alias; } return this; };
+  GraphQLQueryObject.prototype.WithArguments = function (a) { this.args = a; return this; };
+  GraphQLQueryObject.prototype.Except = function (selector) {
+    var nm = selector(nameProxy);
+    this.fields = this.fields.filter(function (f) { return (f.alias || f.name) !== nm; });
+    return this;
+  };
+
+  function GraphQLQueryBuilder(mutation) { this.mutation = mutation === true; this.queries = []; this.vars = []; __lastBuilder = this; }
+  GraphQLQueryBuilder.prototype.AddVariable = function (a, b, c) {
+    if (typeof a === "object" && a !== null) { this.vars.push(a); return this; }
+    if (c !== undefined) { this.vars.push({ name: a, type: b, value: c }); }
+    else { this.vars.push({ name: a, type: null, value: b }); }
+    return this;
+  };
+  GraphQLQueryBuilder.prototype.AddVariables = function () {
+    var i; for (i = 0; i < arguments.length; i++) { if (arguments[i]) { this.vars.push(arguments[i]); } }
+    return this;
+  };
+  GraphQLQueryBuilder.prototype.AddQuery = function (q) {
+    var key = q.alias || q.name, i;
+    for (i = 0; i < this.queries.length; i++) {
+      if ((this.queries[i].alias || this.queries[i].name) === key) {
+        throw new Error("A query named '" + key + "' has already been added. Use As(...) to give it a distinct alias.");
+      }
+    }
+    this.queries.push(q); return this;
+  };
+  Object.defineProperty(GraphQLQueryBuilder.prototype, "Query", { get: function () { return this.build(); } });
+  Object.defineProperty(GraphQLQueryBuilder.prototype, "Variables", {
+    get: function () { var o = {}, i; for (i = 0; i < this.vars.length; i++) { var v = this.vars[i]; if (v.value !== null && v.value !== undefined) { o[camel(v.name)] = v.value; } } return o; }
+  });
+  GraphQLQueryBuilder.prototype.build = function () {
+    var vars = this.vars;
+    function rArgs(o) {
+      return Object.keys(o).filter(function (k) { return k !== "__typeName"; })
+        .map(function (k) { return camel(k) + ": " + formatValue(o[k], vars); }).join(", ");
+    }
+    function pField(f, d) {
+      var head = (f.alias ? f.alias + ": " : "") + camel(f.name) + (f.args ? "(" + rArgs(f.args) + ")" : "");
+      if (f.fields.length) { return pad(d) + head + " {\n" + f.fields.map(function (x) { return pField(x, d + 1); }).join("\n") + "\n" + pad(d) + "}"; }
+      return pad(d) + head;
+    }
+    var decl = vars.filter(function (v) { return v.value !== null && v.value !== undefined; })
+      .map(function (v) { return "$" + v.name + ": " + typeStr(v); });
+    var header = (this.mutation ? "mutation" : "query") + (decl.length ? " (" + decl.join(", ") + ")" : "") + " {";
+    var body = this.queries.map(function (q) {
+      var head = (q.alias ? q.alias + ": " : "") + q.name + (q.args ? "(" + rArgs(q.args) + ")" : "");
+      return pad(1) + head + " {\n" + q.fields.map(function (f) { return pField(f, 2); }).join("\n") + "\n" + pad(1) + "}";
+    }).join("\n");
+    return header + "\n" + body + "\n}";
+  };
+
+  // ---- C# fluent -> JS transpiler ----
+  function isWord(c) { return !!c && /\w/.test(c); }
+  function transpile(src) {
+    var out = "", stack = [], i = 0, n = src.length;
+    function ws(j) { while (j < n && /\s/.test(src[j])) { j++; } return j; }
+    while (i < n) {
+      var ch = src[i];
+      if (ch === '"') {
+        var j = i + 1; out += '"';
+        while (j < n) { out += src[j]; if (src[j] === "\\") { out += src[j + 1] || ""; j += 2; continue; } if (src[j] === '"') { j++; break; } j++; }
+        i = j; continue;
+      }
+      if (ch === "/" && src[i + 1] === "/") { var a = i + 2; while (a < n && src[a] !== "\n") { a++; } i = a; continue; }
+      if (ch === "/" && src[i + 1] === "*") { var b = i + 2; while (b < n && !(src[b] === "*" && src[b + 1] === "/")) { b++; } i = b + 2; continue; }
+      if (src.substr(i, 3) === "new" && !isWord(src[i - 1]) && !isWord(src[i + 3])) {
+        var j2 = ws(i + 3);
+        if (src[j2] === "{") { out += "({"; stack.push("obj"); i = j2 + 1; continue; }
+        if (src[j2] === "[") { var k1 = ws(j2 + 1); if (src[k1] === "]") { var k2 = ws(k1 + 1); if (src[k2] === "{") { out += "["; stack.push("arr"); i = k2 + 1; continue; } } }
+        var mm = /^[A-Za-z_]\w*/.exec(src.slice(j2));
+        if (mm) {
+          var name = mm[0], k = ws(j2 + name.length), generic = null;
+          if (src[k] === "<") { var depth = 0, p = k; while (p < n) { if (src[p] === "<") { depth++; } else if (src[p] === ">") { depth--; if (depth === 0) { p++; break; } } p++; } generic = src.slice(k + 1, p - 1); k = ws(p); }
+          if (src[k] === "{") { out += "__named(" + JSON.stringify(name) + ",{"; stack.push("obj"); i = k + 1; continue; }
+          if (src[k] === "(") { out += "new " + name + "("; if (generic) { out += JSON.stringify(generic.trim()) + ", "; } stack.push("("); i = k + 1; continue; }
+          out += "new " + name; i = k; continue;
+        }
+      }
+      if (/[A-Za-z_]/.test(ch)) {
+        var e = i + 1; while (e < n && /\w/.test(src[e])) { e++; }
+        var word = src.slice(i, e);
+        if (TYPE_DECL[word] && stack.length === 0) { var w1 = ws(e); if (/[A-Za-z_]/.test(src[w1] || "")) { out += "let "; i = e; continue; } }
+        if (stack[stack.length - 1] === "(") { var w2 = ws(e); if (src[w2] === ":" && src[w2 + 1] !== ":") { i = w2 + 1; continue; } }
+        out += word; i = e; continue;
+      }
+      if (ch === "{") { stack.push("blk"); out += ch; i++; continue; }
+      if (ch === "}") { var t = stack.pop(); out += (t === "obj" ? "})" : t === "arr" ? "]" : "}"); i++; continue; }
+      if (ch === "(") { stack.push("("); out += ch; i++; continue; }
+      if (ch === ")") { if (stack[stack.length - 1] === "(") { stack.pop(); } out += ch; i++; continue; }
+      if (ch === "[") { stack.push("idx"); out += ch; i++; continue; }
+      if (ch === "]") { if (stack[stack.length - 1] === "idx") { stack.pop(); } out += ch; i++; continue; }
+      if (ch === "@" && /[A-Za-z_]/.test(src[i + 1] || "")) { i++; continue; }
+      if (ch === "=") {
+        if (src[i + 1] === ">") { out += "=>"; i += 2; continue; }
+        if (src[i + 1] === "=") { out += "=="; i += 2; continue; }
+        out += (stack[stack.length - 1] === "obj") ? ":" : "="; i++; continue;
+      }
+      out += ch; i++;
+    }
+    return out;
+  }
+
+  // ---- GraphQL output highlighter ----
+  var GQL_KW = { query: 1, mutation: 1 };
+  var GQL_TY = { Int: 1, Float: 1, String: 1, Boolean: 1, DateTime: 1, UUID: 1, ID: 1 };
+  function esc(c) { return c === "&" ? "&amp;" : c === "<" ? "&lt;" : c === ">" ? "&gt;" : c; }
+  function hl(s) {
+    var out = "", i = 0, n = s.length;
+    while (i < n) {
+      var c = s[i];
+      if (c === '"') { var j = i + 1; while (j < n && s[j] !== '"') { if (s[j] === "\\") { j++; } j++; } j++; out += '<span class="tok-s">' + s.slice(i, j).replace(/[&<>]/g, esc) + "</span>"; i = j; continue; }
+      if (c === "$") { var k = i + 1; while (k < n && /\w/.test(s[k])) { k++; } out += '<span class="tok-v">' + s.slice(i, k) + "</span>"; i = k; continue; }
+      if (/[A-Za-z_]/.test(c)) { var e = i + 1; while (e < n && /\w/.test(s[e])) { e++; } var w = s.slice(i, e); out += GQL_KW[w] ? '<span class="tok-k">' + w + "</span>" : GQL_TY[w] ? '<span class="tok-t">' + w + "</span>" : w; i = e; continue; }
+      if (/[0-9]/.test(c)) { var d = i + 1; while (d < n && /[0-9.]/.test(s[d])) { d++; } out += '<span class="tok-n">' + s.slice(i, d) + "</span>"; i = d; continue; }
+      if ("{}()[]".indexOf(c) >= 0) { out += '<span class="tok-p">' + c + "</span>"; i++; continue; }
+      out += esc(c); i++;
+    }
+    return out;
+  }
+
+  // ---- presets ----
+  var PRESETS = {
+    nested:
+      'var builder = new GraphQLQueryBuilder();\n\n' +
+      'builder\n' +
+      '    .AddVariable("cities", GraphQLParameterType.STRING_ARRAY, new[] { "Paris" })\n' +
+      '    .AddQuery(new GraphQLQueryObject<Account>("accounts")\n' +
+      '        .AddField(a => a.Id)\n' +
+      '        .AddField(a => a.SocietyName)\n' +
+      '        .AddCollectionField(a => a.Contacts, c => c\n' +
+      '            .AddField(x => x.Email))\n' +
+      '        .WithArguments(new { where = new { city = new { @in = Var("cities") } } }));',
+    every:
+      'var builder = new GraphQLQueryBuilder();\n\n' +
+      'builder.AddQuery(new GraphQLQueryObject<Account>("accounts")\n' +
+      '    .AddEveryFields()\n' +
+      '    .AddCollectionField(a => a.Contacts, c => c.AddEveryFields()));',
+    mutation:
+      'var builder = new GraphQLQueryBuilder(mutation: true);\n\n' +
+      'builder\n' +
+      '    .AddVariable("name", GraphQLParameterType.STRING, "Acme")\n' +
+      '    .AddQuery(new GraphQLQueryObject<Account>("createAccount")\n' +
+      '        .WithArguments(new { input = new { societyName = Var("name") } })\n' +
+      '        .AddField(a => a.Id)\n' +
+      '        .AddField(a => a.SocietyName));'
+  };
+
+  // ---- wiring ----
+  var input = document.getElementById("pg-input");
+  var output = document.querySelector("#pg-output code");
+  var varsWrap = document.getElementById("pg-vars-wrap");
+  var varsEl = document.querySelector("#pg-vars code");
+  var errorEl = document.getElementById("pg-error");
+
+  function showError(msg) { errorEl.textContent = msg; errorEl.classList.add("show"); }
+  function clearError() { errorEl.textContent = ""; errorEl.classList.remove("show"); }
+
+  function run() {
+    __lastBuilder = null;
+    var js;
+    try { js = transpile(input.value); }
+    catch (e) { showError("Could not parse the C#: " + e.message); return; }
+    try {
+      var fn = new Function("GraphQLQueryBuilder", "GraphQLQueryObject", "GraphQLParameterType", "Var", "__named", js);
+      fn(GraphQLQueryBuilder, GraphQLQueryObject, GraphQLParameterType, Var, __named);
+    } catch (e) { showError(e.message); return; }
+    if (!__lastBuilder) { showError("No GraphQLQueryBuilder was created."); return; }
+    var q, vars;
+    try { q = __lastBuilder.Query; vars = __lastBuilder.Variables; }
+    catch (e) { showError(e.message); return; }
+    clearError();
+    output.innerHTML = hl(q);
+    var keys = Object.keys(vars);
+    if (keys.length) { varsWrap.classList.remove("empty"); varsEl.textContent = JSON.stringify(vars, null, 2); }
+    else { varsWrap.classList.add("empty"); }
+  }
+
+  var timer = null;
+  input.addEventListener("input", function () { if (timer) { clearTimeout(timer); } timer = setTimeout(run, 180); });
+  input.addEventListener("keydown", function (ev) {
+    if (ev.key === "Tab") {
+      ev.preventDefault();
+      var s = this.selectionStart, e = this.selectionEnd;
+      this.value = this.value.slice(0, s) + "    " + this.value.slice(e);
+      this.selectionStart = this.selectionEnd = s + 4;
+    }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".pg-presets button"), function (btn) {
+    btn.addEventListener("click", function () { input.value = PRESETS[btn.getAttribute("data-preset")] || ""; run(); });
+  });
+
+  input.value = PRESETS.nested;
+  run();
+})();
+</script>
+
+</body>
+</html>

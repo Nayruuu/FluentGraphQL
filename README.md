@@ -9,10 +9,9 @@
 
 - ✅ Fluent API to build queries and mutations
 - ✅ Nested field selection with arguments and aliases
-- ✅ Inline fragments and directives support (coming soon)
 - ✅ Easy integration in .NET applications
-- ✅ Lightweight and dependency-free (except System.Text.Json)
-- ✅ Built-in performance benchmarks — [see results](src/FluentGraphQL/BenchmarkDotNet.Artifacts/results/FluentQL.Benchmark.Benchmarks.GraphQLBuilderBenchmark-report-github.md)
+- ✅ Lightweight — a single dependency (System.Text.Json)
+- ✅ Built-in performance benchmarks (BenchmarkDotNet) — run `dotnet run -c Release --project src/FluentGraphQL.Benchmark`
 
 ## 🤝 Comparison
 
@@ -60,14 +59,16 @@ public class Task
 ```
 
 ```csharp
-var builder = new FluentGraphQL();
+using static FluentGraphQL.GraphQL;
+
+var builder = new GraphQLQueryBuilder();
 
 var name = "Paul";
-var cities = new string[] { "Paris", "London", "Madrid", "New York" };
+var cities = new[] { "Paris", "London", "Madrid", "New York" };
 
 builder
-    .AddVariable("firstName", GraphQLParameterType.STRING, name)
-    .AddVariable("cities", GraphQLParameterType.STRING_ARRAY, cities)
+    .AddVariable("firstName", name)
+    .AddVariable("cities", cities)
     .AddQuery(new GraphQLQueryObject<Account>("accounts")
         .AddEveryFields()
         .AddCollectionField(
@@ -89,7 +90,7 @@ builder
                     {
                         city = new
                         {
-                            @in = "cities"
+                            @in = Var("cities")
                         }
                     },
                     new
@@ -98,7 +99,7 @@ builder
                         {
                             firstName = new
                             {
-                                eq = "firstName"
+                                eq = Var("firstName")
                             }
                         }
                     }
@@ -134,12 +135,31 @@ query ($firstName: String!, $cities: [String]!) {
         name
         description
         startDate
-        endDate
+        dueDate
       }
     }
   }
 }
 ```
+
+## 🔑 Variables and literal values
+
+Inside `WithArguments(...)`, a value is treated one of two ways:
+
+- **A `string` (or any other value) is literal data.** It is JSON-escaped before being inlined, so quotes, backslashes and newlines coming from user input cannot break out of the query. `eq = "Paris"` renders `eq: "Paris"`; `eq = userInput` is always safely escaped.
+- **`Var("name")` is a reference to a declared variable.** It renders `$name` and must match a variable added with `AddVariable`.
+
+```csharp
+using static FluentGraphQL.GraphQL;
+
+builder
+    .AddVariable("city", "Paris")
+    .AddQuery(new GraphQLQueryObject<Account>("accounts")
+        .AddEveryFields()
+        .WithArguments(new { where = new { city = new { eq = Var("city") } } }));
+```
+
+`AddVariable(name, value)` infers the GraphQL type from the value's type. Use the explicit `AddVariable(name, GraphQLParameterType.X, value)` overload when you need full control over the declared type.
 
 ## 🧪 Testing
 

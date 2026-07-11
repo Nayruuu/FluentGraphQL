@@ -1,31 +1,32 @@
-﻿using System;
 using System.Text.Json.Nodes;
 
-namespace FluentGraphQL
+namespace FluentGraphQL;
+
+/// <summary>
+/// A GraphQL request payload: the query document and its variables.
+/// </summary>
+public class GraphQLRequest
 {
-    public class GraphQLRequest
+    public string Query { get; set; }
+
+    public JsonObject Variables { get; set; }
+
+    public GraphQLRequest()
     {
-        public string Query { get; set; }
+    }
 
-        public JsonObject Variables { get; set; }
-
-        public GraphQLRequest()
+    public GraphQLRequest(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
         {
+            throw new ArgumentException("Query cannot be null or whitespace.", nameof(query));
         }
 
-        public GraphQLRequest(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                throw new ArgumentException("L'argument 'query' ne peut pas être null");
-            }
+        Query = query;
+    }
 
-            this.Query = query;
-        }
-
-        public GraphQLRequest(string query, JsonObject variables) : this(query)
-        {
-            this.Variables = variables;
-        }
+    public GraphQLRequest(string query, JsonObject variables) : this(query)
+    {
+        Variables = variables;
     }
 }

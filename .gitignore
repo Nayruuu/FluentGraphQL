@@ -5,3 +5,4 @@
 **/*.dll
 **/*.pdb
 **/*.DotSettings.user
+**/BenchmarkDotNet.Artifacts
