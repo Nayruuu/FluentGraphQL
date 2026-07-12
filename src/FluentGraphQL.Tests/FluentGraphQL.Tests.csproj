@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="GraphQL-Parser" Version="9.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -21,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FluentGraphQL\FluentGraphQL.csproj" />
-    <ProjectReference Include="..\FluentQL.Classes\FluentQL.Classes.csproj" />
+    <ProjectReference Include="..\FluentGraphQL.Classes\FluentGraphQL.Classes.csproj" />
   </ItemGroup>
 
 </Project>

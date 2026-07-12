@@ -3,15 +3,15 @@ using FluentGraphQL;
 using FluentGraphQL.Classes;
 using GraphQL.Query.Builder;
 
-namespace FluentQL.Benchmark.Benchmarks;
+namespace FluentGraphQL.Benchmark.Benchmarks;
 
 [MemoryDiagnoser]
 [WarmupCount(5)]
 [IterationCount(10)]
 public class GraphQLBuilderBenchmark
 {
-    [Benchmark(OperationsPerInvoke = 1000)]
-    public string FluentQL()
+    [Benchmark]
+    public string FluentGraphQL()
     {
         var builder = new GraphQLQueryBuilder();
         
@@ -40,7 +40,7 @@ public class GraphQLBuilderBenchmark
         return query;
     }
 
-    [Benchmark(OperationsPerInvoke = 1000)]
+    [Benchmark]
     public string GraphQLQueryBuilder()
     {
         var builder = new Query<Account>("accounts");
@@ -64,5 +64,67 @@ public class GraphQLBuilderBenchmark
         var query = builder.Build();
 
         return query;
+    }
+
+    [Benchmark]
+    public string FluentGraphQL_Filtered()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder.AddQuery(new GraphQLQueryObject<Account>("accounts")
+            .Where(x => x.SocietyName == "Acme"
+                && x.Contacts.Any(c => c.FirstName == "Jo"))
+            .AddField(x => x.Id)
+            .AddField(x => x.SocietyName)
+            .AddCollectionField(
+                x => x.Contacts,
+                contact => contact
+                    .AddField(c => c.Id)
+                    .AddField(c => c.FirstName)
+                    .AddField(c => c.LastName)
+                    .AddField(c => c.Email)
+                    .AddField(c => c.PhoneNumber)
+                    .AddCollectionField(
+                        c => c.Tasks,
+                        task => task
+                            .AddField(t => t.Id)
+                            .AddField(t => t.Description)
+                            .AddField(t => t.DueDate)
+                            .AddField(t => t.StartDate)
+                            .AddField(t => t.Name))));
+
+        return builder.Query;
+    }
+
+    [Benchmark]
+    public string GraphQLQueryBuilder_Filtered()
+    {
+        var builder = new Query<Account>("accounts");
+
+        builder
+            .AddArguments(new
+            {
+                where = new
+                {
+                    societyName = new { eq = "Acme" },
+                    contacts = new { some = new { firstName = new { eq = "Jo" } } }
+                }
+            })
+            .AddField(x => x.Id)
+            .AddField(x => x.SocietyName)
+            .AddField(x => x.Contacts, contact => contact
+                .AddField(c => c.Id)
+                .AddField(c => c.FirstName)
+                .AddField(c => c.LastName)
+                .AddField(c => c.Email)
+                .AddField(c => c.PhoneNumber)
+                .AddField(c => c.Tasks, task => task
+                    .AddField(t => t.Id)
+                    .AddField(t => t.Description)
+                    .AddField(t => t.DueDate)
+                    .AddField(t => t.StartDate)
+                    .AddField(t => t.Name)));
+
+        return builder.Build();
     }
 }

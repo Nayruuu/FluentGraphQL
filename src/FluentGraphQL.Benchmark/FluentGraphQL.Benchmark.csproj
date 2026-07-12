@@ -5,7 +5,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>FluentQL.Benchmark</RootNamespace>
+    <RootNamespace>FluentGraphQL.Benchmark</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FluentGraphQL\FluentGraphQL.csproj" />
-    <ProjectReference Include="..\FluentQL.Classes\FluentQL.Classes.csproj" />
+    <ProjectReference Include="..\FluentGraphQL.Classes\FluentGraphQL.Classes.csproj" />
   </ItemGroup>
 
 </Project>

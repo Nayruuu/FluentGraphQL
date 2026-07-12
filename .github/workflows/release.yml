@@ -1,0 +1,31 @@
+name: Release (NuGet)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so Nerdbank.GitVersioning can compute the version
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Test
+        run: dotnet test src/FluentGraphQL.Tests/FluentGraphQL.Tests.csproj --configuration Release
+
+      - name: Pack
+        # PublicRelease=true forces the clean version (2.0.1, not 2.0.1-gABCDEF): this workflow always publishes a public release.
+        run: dotnet pack src/FluentGraphQL/FluentGraphQL.csproj --configuration Release -p:PublicRelease=true --output artifacts
+
+      - name: Push to nuget.org
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

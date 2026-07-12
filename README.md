@@ -9,16 +9,35 @@
 
 - ✅ Fluent API to build queries and mutations
 - ✅ Nested field selection with arguments and aliases
-- ✅ Inline fragments and directives support (coming soon)
-- ✅ Easy integration in .NET applications
-- ✅ Lightweight and dependency-free (except System.Text.Json)
-- ✅ Built-in performance benchmarks — [see results](src/FluentGraphQL/BenchmarkDotNet.Artifacts/results/FluentQL.Benchmark.Benchmarks.GraphQLBuilderBenchmark-report-github.md)
+- ✅ **Type-safe LINQ-style filters** — `.Where(x => x.City == "Paris" && x.Age >= 18)` compiled to the GraphQL `where` argument
+- ✅ Lightweight — a single dependency (System.Text.Json)
+- ✅ **High performance** — no per-field expression trees ([see benchmarks](#-performance))
 
 ## 🤝 Comparison
 
 There is already a great alternative available: [`graphql-query-builder-dotnet`](https://github.com/charlesdevandiere/graphql-query-builder-dotnet) by Charles Devandiere. This project is not meant to discredit or replace it.
 
 **FluentGraphQL** simply explores a different architectural approach, with a focus on fluent chaining, dynamic nested field construction, and performance fine-tuning. It was born independently and out of curiosity and learning, not competition.
+
+## ⚡ Performance
+
+Benchmarked with [BenchmarkDotNet](https://benchmarkdotnet.org/) against [`graphql-query-builder-dotnet`](https://github.com/charlesdevandiere/graphql-query-builder-dotnet) on the same nested query (`accounts → contacts → tasks`). Run it yourself:
+
+```bash
+dotnet run -c Release --project src/FluentGraphQL.Benchmark
+```
+
+| Scenario | Library | Mean | Allocated |
+|---|---|---:|---:|
+| Field selection | **FluentGraphQL** | **~0.7 µs** | **1.8 KB** |
+| Field selection | graphql-query-builder-dotnet | ~5.2 µs | 11.3 KB |
+| + `where` filter | **FluentGraphQL** — `.Where(x => …)` | **~2.7 µs** | **5.8 KB** |
+| + `where` filter | graphql-query-builder-dotnet — manual args | ~7.9 µs | 19.1 KB |
+
+- **~7× faster, ~6× less memory** selecting fields — FluentGraphQL reads member names via `Func` + `[CallerArgumentExpression]` instead of allocating an `Expression<Func<>>` per field.
+- **~3× faster, ~3× less memory** on a filtered query — and the filter stays **type-safe**: `.Where(x => x.City == "Paris" && x.Contacts.Any(c => c.FirstName == "Jo"))` rather than a hand-written `where` object.
+
+<sub>Apple M1 Max, .NET 9. Absolute numbers vary by machine — the ratios are the point. `.Where` parses one expression tree per query (read, never `.Compile()`d); field selection uses none.</sub>
 
 ## 📦 Installation
 
@@ -60,14 +79,14 @@ public class Task
 ```
 
 ```csharp
-var builder = new FluentGraphQL();
+using static FluentGraphQL.GraphQL;
 
-var name = "Paul";
-var cities = new string[] { "Paris", "London", "Madrid", "New York" };
+var builder = new GraphQLQueryBuilder();
+
+var cities = new[] { "Paris", "London" };
 
 builder
-    .AddVariable("firstName", GraphQLParameterType.STRING, name)
-    .AddVariable("cities", GraphQLParameterType.STRING_ARRAY, cities)
+    .AddVariable("firstName", "Paul")
     .AddQuery(new GraphQLQueryObject<Account>("accounts")
         .AddEveryFields()
         .AddCollectionField(
@@ -79,32 +98,9 @@ builder
               task => task.AddEveryFields()
             )
         )
-        .WithArguments(new
-        {
-            where = new
-            {
-                and = new object[]
-                {
-                    new
-                    {
-                        city = new
-                        {
-                            @in = "cities"
-                        }
-                    },
-                    new
-                    {
-                        contacts = new
-                        {
-                            firstName = new
-                            {
-                                eq = "firstName"
-                            }
-                        }
-                    }
-                }
-            }
-        }));
+        .Where(account =>
+            cities.Contains(account.Adresse.City)
+            && account.Contacts.Any(c => c.FirstName == Var<string>("firstName"))));
 
 var result = yourapi.Query(builder.Request);
 ```
@@ -112,13 +108,11 @@ var result = yourapi.Query(builder.Request);
 Resulting query:
 
 ```graphql
-query ($firstName: String!, $cities: [String]!) {
+query ($firstName: String!) {
   accounts(
     where: {
-      and: [
-        { city: { in: $cities } }
-        { contacts: { firstName: { eq: $firstName } } }
-      ]
+      adresse: { city: { in: ["Paris", "London"] } }
+      contacts: { some: { firstName: { eq: $firstName } } }
     }
   ) {
     id
@@ -134,12 +128,33 @@ query ($firstName: String!, $cities: [String]!) {
         name
         description
         startDate
-        endDate
+        dueDate
       }
     }
   }
 }
 ```
+
+## 🔑 Variables and literal values
+
+Inside a `.Where(...)` filter, a value is treated one of two ways:
+
+- **A C# literal or captured value is literal data.** It is JSON-escaped before being inlined, so quotes, backslashes and newlines from user input cannot break out of the query. `x.City == "Paris"` renders `city: { eq: "Paris" }`; `x.City == userInput` is always safely escaped.
+- **`Var<T>("name")` is a reference to a declared variable.** It renders `$name` and must match a variable added with `AddVariable`.
+
+```csharp
+using static FluentGraphQL.GraphQL;
+
+builder
+    .AddVariable("city", "Paris")
+    .AddQuery(new GraphQLQueryObject<Account>("accounts")
+        .AddEveryFields()
+        .Where(x => x.Adresse.City == Var<string>("city")));
+```
+
+`AddVariable(name, value)` infers the GraphQL type from the value's type. Use the explicit `AddVariable(name, GraphQLParameterType.X, value)` overload when you need full control over the declared type.
+
+Need an operator the fluent form doesn't cover (pagination, a custom argument)? `WithArguments(new { ... })` is still available as an escape hatch and follows the same variable/literal rules.
 
 ## 🧪 Testing
 

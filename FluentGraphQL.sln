@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentGraphQL.Tests", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentGraphQL.Benchmark", "src\FluentGraphQL.Benchmark\FluentGraphQL.Benchmark.csproj", "{D722F7B0-7E75-445A-998B-2AE189858C07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentQL.Classes", "src\FluentQL.Classes\FluentQL.Classes.csproj", "{C2462DC4-9163-4E55-B6EB-4BD383E115F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentGraphQL.Classes", "src\FluentGraphQL.Classes\FluentGraphQL.Classes.csproj", "{C2462DC4-9163-4E55-B6EB-4BD383E115F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
