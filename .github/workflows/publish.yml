@@ -1,11 +1,16 @@
-name: Release (NuGet)
+name: Publish (NuGet)
 
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write   # request the OIDC token used for NuGet trusted publishing
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: release   # must match the nuget.org trusted-publishing policy's environment
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,8 +29,14 @@ jobs:
         run: dotnet test src/FluentGraphQL.Tests/FluentGraphQL.Tests.csproj --configuration Release
 
       - name: Pack
-        # PublicRelease=true forces the clean version (2.0.1, not 2.0.1-gABCDEF): this workflow always publishes a public release.
+        # PublicRelease=true forces the clean version (e.g. 2.0.2, not 2.0.2-gABCDEF): this workflow always publishes a public release.
         run: dotnet pack src/FluentGraphQL/FluentGraphQL.csproj --configuration Release -p:PublicRelease=true --output artifacts
 
+      - name: NuGet login (OIDC → short-lived API key)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: Nayruuu
+
       - name: Push to nuget.org
-        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
