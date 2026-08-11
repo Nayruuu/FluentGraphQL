@@ -3,12 +3,12 @@
 	<PropertyGroup>
 		<PackageId>FluentGraphQL</PackageId>
 		<Authors>Nayruu</Authors>
-		<Description>A simple and fluent GraphQL query builder for .NET</Description>
-		<PackageTags>GraphQL Builder Fluent .NET</PackageTags>
-		<RepositoryUrl>https://github.com/Nayruuu/graphql-generator</RepositoryUrl>
+		<Description>Fluent, type-safe GraphQL query builder for .NET. Compose queries and mutations with a chainable C# API, no code generation. Lightweight, with reproducible benchmarks.</Description>
+		<PackageTags>graphql query-builder fluent type-safe dotnet csharp graphql-client mutation query codegen-free lightweight netstandard</PackageTags>
+		<RepositoryUrl>https://github.com/Nayruuu/FluentGraphQL</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/Nayruuu/graphql-generator</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/Nayruuu/FluentGraphQL</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RootNamespace>FluentGraphQL</RootNamespace>
 		<TargetFramework>netstandard2.1</TargetFramework>
