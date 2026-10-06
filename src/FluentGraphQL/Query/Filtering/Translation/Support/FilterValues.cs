@@ -11,7 +11,7 @@ internal static class FilterValues
 
         if (expression is MethodCallExpression call && IsVariableReference(call))
         {
-            return new GraphQLVariable((string)EvaluateConstant(call.Arguments[0]));
+            return new GraphQLVariable((string)EvaluateConstant(call.Arguments[0]), optional: call.Method.Name == "OptionalVar");
         }
 
         return EvaluateConstant(expression);
@@ -74,7 +74,7 @@ internal static class FilterValues
     private static bool IsVariableReference(MethodCallExpression call)
     {
         return call.Method.DeclaringType == typeof(GraphQL)
-            && call.Method.Name == "Var"
+            && (call.Method.Name == "Var" || call.Method.Name == "OptionalVar")
             && call.Method.IsGenericMethod;
     }
 }

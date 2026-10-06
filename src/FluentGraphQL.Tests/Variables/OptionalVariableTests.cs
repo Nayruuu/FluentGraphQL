@@ -102,4 +102,37 @@ public class OptionalVariableTests
 
         Assert.Throws<InvalidOperationException>(() => builder.Query);
     }
+
+    [Fact]
+    public void OptionalVarInWhere_WithValue_IsReferenced()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder
+            .AddVariable("cities", GraphQLParameterType.STRING_ARRAY, new[] { "Paris" })
+            .AddQuery(new GraphQLQueryObject<Account>("accounts")
+                .Where(x => OptionalVar<string[]>("cities").Contains(x.SocietyName))
+                .AddField(account => account.Id));
+
+        Assert.Equal(
+            "query ($cities: [String]!) { accounts(where: { societyName: { in: $cities } }) { id } }",
+            Normalize(builder.Query));
+    }
+
+    [Fact]
+    public void OptionalVarInWhere_WithoutValue_OmitsTheOperatorAndTheDeclaration()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder
+            .AddVariable("cities", GraphQLParameterType.STRING_ARRAY, null)
+            .AddVariable("name", GraphQLParameterType.STRING, "Acme")
+            .AddQuery(new GraphQLQueryObject<Account>("accounts")
+                .Where(x => OptionalVar<string[]>("cities").Contains(x.Adresse.City) && x.SocietyName == Var<string>("name"))
+                .AddField(account => account.Id));
+
+        Assert.Equal(
+            "query ($name: String!) { accounts(where: { adresse: { city: { } }, societyName: { eq: $name } }) { id } }",
+            Normalize(builder.Query));
+    }
 }

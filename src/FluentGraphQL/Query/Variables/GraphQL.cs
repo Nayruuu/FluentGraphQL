@@ -39,4 +39,17 @@ public static class GraphQL
     {
         return default;
     }
+
+    /// <summary>
+    /// References a variable that may have no value inside a fluent filter predicate, e.g. <c>x =&gt; x.City == OptionalVar&lt;string&gt;("city")</c>.
+    /// Rendered as <c>$name</c> when the variable holds a value; otherwise the filter entry is omitted and the variable is not declared.
+    /// Returns <c>default</c> — the value is never used at runtime; the filter translator reads the call.
+    /// </summary>
+    /// <typeparam name="T">The CLR type at the comparison site.</typeparam>
+    /// <param name="name">The variable name (without the leading <c>$</c>) to reference.</param>
+    /// <returns>A default placeholder; the filter emits <c>$name</c> or nothing.</returns>
+    public static T OptionalVar<T>(string name)
+    {
+        return default;
+    }
 }
