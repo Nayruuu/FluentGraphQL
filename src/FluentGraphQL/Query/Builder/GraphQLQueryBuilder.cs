@@ -268,6 +268,13 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
         foreach (var property in properties)
         {
+            var value = property.GetValue(arguments);
+
+            if (IsOmitted(value))
+            {
+                continue;
+            }
+
             if (first)
             {
                 first = false;
@@ -279,8 +286,16 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
             AppendCamelCase(builder, property.Name);
             builder.Append(": ");
-            AppendValue(builder, property.GetValue(arguments));
+            AppendValue(builder, value);
         }
+    }
+
+    private bool IsOmitted(object value)
+    {
+        return value is GraphQLVariable { Optional: true } reference
+            && (HasParameters == false
+                || Parameters.TryGetValue(reference.Name, out var parameter) == false
+                || parameter.Value is null);
     }
 
     private void AppendValue(StringBuilder builder, object value)
@@ -339,6 +354,11 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
         foreach (var item in items)
         {
+            if (IsOmitted(item))
+            {
+                continue;
+            }
+
             if (first)
             {
                 first = false;
@@ -361,25 +381,42 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
     private void AppendObjectArguments(StringBuilder builder, GraphQLObject queryObject)
     {
+        var start = builder.Length;
+
         builder.Append("(");
 
-        var first = true;
+        var contentStart = builder.Length;
 
         if (queryObject.WhereFilter is not null)
         {
             builder.Append("where: ");
             AppendFilterObject(builder, queryObject.WhereFilter);
-            first = false;
         }
 
         if (queryObject.Arguments is not null)
         {
-            if (first == false)
+            var beforeSeparator = builder.Length;
+
+            if (builder.Length > contentStart)
             {
                 builder.Append(", ");
             }
 
+            var argumentsStart = builder.Length;
+
             AppendArguments(builder, queryObject.Arguments);
+
+            if (builder.Length == argumentsStart)
+            {
+                builder.Length = beforeSeparator;
+            }
+        }
+
+        if (builder.Length == contentStart)
+        {
+            builder.Length = start;
+
+            return;
         }
 
         builder.Append(")");
@@ -393,6 +430,11 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
         foreach (var entry in filter.Entries)
         {
+            if (IsOmitted(entry.Value))
+            {
+                continue;
+            }
+
             if (first)
             {
                 first = false;
@@ -418,6 +460,11 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
         foreach (var item in array.Items)
         {
+            if (IsOmitted(item))
+            {
+                continue;
+            }
+
             if (first)
             {
                 first = false;

@@ -72,6 +72,22 @@ public class GraphQLQueryObjectField<T> : GraphQLQueryObjectField where T : clas
     }
 
     /// <summary>
+    /// Removes a previously selected sub-field (e.g. after <see cref="AddEveryFields"/>).
+    /// </summary>
+    /// <typeparam name="TProperty">Type of the sub-field being removed.</typeparam>
+    /// <param name="selector">The sub-field to remove, e.g. <c>x => x.Name</c>.</param>
+    /// <param name="selectorText">Compiler-supplied from <paramref name="selector"/>; leave unset.</param>
+    /// <returns>The same field, to continue chaining.</returns>
+    public GraphQLQueryObjectField<T> Except<TProperty>(
+        Func<T, TProperty> selector,
+        [CallerArgumentExpression(nameof(selector))] string selectorText = null)
+    {
+        Fields.RemoveByKey(selectorText.ToMemberName());
+
+        return this;
+    }
+
+    /// <summary>
     /// Selects every scalar and enum property of <typeparamref name="T"/>.
     /// </summary>
     /// <returns>The same field, to continue chaining.</returns>

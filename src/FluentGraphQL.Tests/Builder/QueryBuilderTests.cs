@@ -60,4 +60,32 @@ public class QueryBuilderTests
 
         Assert.IsType<ArgumentException>(exception);
     }
+
+    [Fact]
+    public void Request_SerializedWithoutNamingPolicy_UsesGraphQLOverHttpFieldNames()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder
+            .AddVariable("id", GraphQLParameterType.INT, 42)
+            .AddQuery(new GraphQLQueryObject<Account>("accounts").AddField(account => account.Id));
+
+        var json = System.Text.Json.JsonSerializer.Serialize(builder.Request);
+
+        Assert.StartsWith("{\"query\":", json);
+        Assert.Contains("\"variables\":{\"id\":42}", json);
+    }
+
+    [Fact]
+    public void RequestData_GraphQLResponseWithErrors_DeserializesDataAndErrorMessages()
+    {
+        var json = "{\"data\":{\"count\":3},\"errors\":[{\"message\":\"Champ inconnu\"}]}";
+
+        var response = System.Text.Json.JsonSerializer.Deserialize<GraphQLRequestData<Dictionary<string, int>>>(
+            json,
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.Equal(3, response.Data["count"]);
+        Assert.Equal("Champ inconnu", Assert.Single(response.Errors).Message);
+    }
 }

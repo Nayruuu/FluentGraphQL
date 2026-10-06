@@ -17,6 +17,18 @@ public static class GraphQL
     }
 
     /// <summary>
+    /// References a variable that may have no value. Rendered as <c>$name</c> when the variable holds a value;
+    /// otherwise the argument, filter entry or list item holding the reference is omitted and the variable is not declared.
+    /// Use it for optional filters; <see cref="Var"/> fails on a missing value instead.
+    /// </summary>
+    /// <param name="name">The variable name (without the leading <c>$</c>) to reference.</param>
+    /// <returns>A reference usable inside an argument object, rendered as <c>$name</c> or omitted.</returns>
+    public static GraphQLVariable OptionalVar(string name)
+    {
+        return new GraphQLVariable(name, optional: true);
+    }
+
+    /// <summary>
     /// References a declared variable inside a fluent filter predicate, e.g. <c>x =&gt; x.City == Var&lt;string&gt;("city")</c>.
     /// Rendered as <c>$name</c>. Returns <c>default</c> — the value is never used at runtime; the filter translator reads the call.
     /// </summary>

@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace FluentGraphQL;
 
@@ -7,8 +8,10 @@ namespace FluentGraphQL;
 /// </summary>
 public class GraphQLRequest
 {
+    [JsonPropertyName("query")]
     public string Query { get; set; }
 
+    [JsonPropertyName("variables")]
     public JsonObject Variables { get; set; }
 
     public GraphQLRequest()

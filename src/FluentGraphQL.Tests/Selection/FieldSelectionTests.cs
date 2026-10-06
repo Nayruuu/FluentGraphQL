@@ -43,4 +43,20 @@ public class FieldSelectionTests
             "query { contacts { id firstName lastName email } }",
             Normalize(builder.Query));
     }
+
+    [Fact]
+    public void Except_OnNestedCollectionField_RemovesTheSelectedSubField()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder.AddQuery(new GraphQLQueryObject<Account>("accounts")
+            .AddField(account => account.Id)
+            .AddCollectionField(
+                account => account.Contacts,
+                contact => contact.AddEveryFields().Except(c => c.PhoneNumber)));
+
+        Assert.Equal(
+            "query { accounts { id contacts { id firstName lastName email } } }",
+            Normalize(builder.Query));
+    }
 }
