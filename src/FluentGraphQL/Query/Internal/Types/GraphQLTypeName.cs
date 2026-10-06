@@ -35,7 +35,7 @@ internal static class GraphQLTypeName
             GraphQLParameterType.STRING_ARRAY => "[String]!",
             GraphQLParameterType.INT_ARRAY => "[Int!]!",
             GraphQLParameterType.DATETIME_ARRAY => "[DateTime!]!",
-            GraphQLParameterType.OBJECT => value.GetType().Name,
+            GraphQLParameterType.OBJECT => value.GetType().Name + "!",
             GraphQLParameterType.UUID => "UUID!",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported GraphQL parameter type.")
         };

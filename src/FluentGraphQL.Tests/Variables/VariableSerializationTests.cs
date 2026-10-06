@@ -72,4 +72,28 @@ public class VariableSerializationTests
         Assert.DoesNotContain("\"Account\"", variables);
         Assert.DoesNotContain("\"SocietyName\"", variables);
     }
+
+    [Fact]
+    public void Variables_DateTimeVariable_SerializesAsUtcIso8601()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder
+            .AddVariable("since", GraphQLParameterType.DATETIME, new DateTime(2026, 7, 10, 14, 30, 0, DateTimeKind.Utc))
+            .AddQuery(new GraphQLQueryObject<Account>("accounts").AddField(account => account.Id));
+
+        Assert.Equal("{\"since\":\"2026-07-10T14:30:00.0000000Z\"}", builder.Variables.ToJsonString());
+    }
+
+    [Fact]
+    public void Variables_DateTimeNestedInObjectVariable_SerializesAsUtcIso8601()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder
+            .AddVariable("input", GraphQLParameterType.OBJECT, new { createdAt = new DateTime(2026, 7, 10, 14, 30, 0, DateTimeKind.Utc) })
+            .AddQuery(new GraphQLQueryObject<Account>("saveAccount").AddField(account => account.Id));
+
+        Assert.Contains("\"createdAt\":\"2026-07-10T14:30:00.0000000Z\"", builder.Variables.ToJsonString());
+    }
 }

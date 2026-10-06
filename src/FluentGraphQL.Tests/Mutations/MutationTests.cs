@@ -36,7 +36,32 @@ public class MutationTests
                 .AddField(account => account.Id));
 
         Assert.Equal(
-            "mutation ($input: SaveAccountInput) { saveAccount(input: $input) { id } }",
+            "mutation ($input: SaveAccountInput!) { saveAccount(input: $input) { id } }",
             Normalize(builder.Query));
+    }
+
+    [Fact]
+    public void AddScalarQuery_ScalarMutation_HasNoSelectionSet()
+    {
+        var builder = new GraphQLQueryBuilder(true);
+
+        builder
+            .AddVariable("input", GraphQLParameterType.OBJECT, new SaveAccountInput())
+            .AddScalarQuery(new GraphQLQueryObject<int>("saveAccount")
+                .WithArguments(new { input = Var("input") }));
+
+        Assert.Equal(
+            "mutation ($input: SaveAccountInput!) { saveAccount(input: $input) }",
+            Normalize(builder.Query));
+    }
+
+    [Fact]
+    public void AddScalarQuery_SameNameTwice_Throws()
+    {
+        var builder = new GraphQLQueryBuilder(true);
+
+        builder.AddScalarQuery(new GraphQLQueryObject<bool>("toggle"));
+
+        Assert.Throws<InvalidOperationException>(() => builder.AddScalarQuery(new GraphQLQueryObject<bool>("toggle")));
     }
 }

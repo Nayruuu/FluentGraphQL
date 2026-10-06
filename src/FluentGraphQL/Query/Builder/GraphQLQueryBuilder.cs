@@ -28,7 +28,8 @@ public class GraphQLQueryBuilder : GraphQLBuilder
     private static readonly JsonSerializerOptions VariablesSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters = { new UtcDateTimeConverter() }
     };
 
     private readonly bool _mutation;
@@ -146,6 +147,23 @@ public class GraphQLQueryBuilder : GraphQLBuilder
     /// <exception cref="InvalidOperationException">A query with the same name or alias was already added.</exception>
     public GraphQLQueryBuilder AddQuery<T>(GraphQLQueryObject<T> queryObject) where T : class
     {
+        return AddQueryObject(queryObject);
+    }
+
+    /// <summary>
+    /// Adds a root query (or mutation) whose result is a scalar, emitted without a selection set.
+    /// </summary>
+    /// <typeparam name="T">The scalar type returned by the query.</typeparam>
+    /// <param name="queryObject">The root query to add.</param>
+    /// <returns>The same builder, to continue chaining.</returns>
+    /// <exception cref="InvalidOperationException">A query with the same name or alias was already added.</exception>
+    public GraphQLQueryBuilder AddScalarQuery<T>(GraphQLQueryObject<T> queryObject) where T : struct
+    {
+        return AddQueryObject(queryObject);
+    }
+
+    private GraphQLQueryBuilder AddQueryObject(GraphQLQueryObject queryObject)
+    {
         var queryName = queryObject.HasAliasName() ? queryObject.AliasName : queryObject.Name;
 
         if (_queries.ContainsKey(queryName))
@@ -229,6 +247,13 @@ public class GraphQLQueryBuilder : GraphQLBuilder
         if (HasFilterOrArguments(query))
         {
             AppendObjectArguments(builder, query);
+        }
+
+        if (query.HasFields == false)
+        {
+            builder.AppendLine();
+
+            return;
         }
 
         builder.AppendLine(" {");
@@ -472,7 +497,7 @@ public class GraphQLQueryBuilder : GraphQLBuilder
             bool booleanValue => booleanValue ? "true" : "false",
             string stringValue => JsonSerializer.Serialize(stringValue, ArgumentSerializerOptions),
             Guid guidValue => "\"" + guidValue + "\"",
-            DateTime dateTimeValue => "\"" + dateTimeValue.ToString("s", CultureInfo.InvariantCulture) + "\"",
+            DateTime dateTimeValue => "\"" + UtcDateTimeConverter.Format(dateTimeValue) + "\"",
             float floatValue => floatValue.ToString(CultureInfo.InvariantCulture),
             double doubleValue => doubleValue.ToString(CultureInfo.InvariantCulture),
             decimal decimalValue => decimalValue.ToString(CultureInfo.InvariantCulture),

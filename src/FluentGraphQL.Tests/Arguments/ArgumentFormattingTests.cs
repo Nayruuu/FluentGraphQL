@@ -23,7 +23,7 @@ public class ArgumentFormattingTests
     }
 
     [Fact]
-    public void FormatArgument_DateTimeLiteral_RendersAsQuotedIso8601RegardlessOfCulture()
+    public void FormatArgument_DateTimeLiteral_RendersAsQuotedUtcIso8601RegardlessOfCulture()
     {
         var previousCulture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
@@ -34,10 +34,10 @@ public class ArgumentFormattingTests
 
             builder.AddQuery(new GraphQLQueryObject<Account>("accounts")
                 .AddField(account => account.Id)
-                .WithArguments(new { where = new { createdAt = new { gt = new DateTime(2026, 7, 10, 14, 30, 0) } } }));
+                .WithArguments(new { where = new { createdAt = new { gt = new DateTime(2026, 7, 10, 14, 30, 0, DateTimeKind.Utc) } } }));
 
             Assert.Equal(
-                "query { accounts(where: { createdAt: { gt: \"2026-07-10T14:30:00\" } }) { id } }",
+                "query { accounts(where: { createdAt: { gt: \"2026-07-10T14:30:00.0000000Z\" } }) { id } }",
                 Normalize(builder.Query));
         }
         finally
