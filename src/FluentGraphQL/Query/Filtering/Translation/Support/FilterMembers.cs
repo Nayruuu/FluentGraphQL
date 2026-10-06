@@ -6,12 +6,27 @@ internal static class FilterMembers
 {
     public static Expression Unwrap(Expression expression)
     {
-        while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } unary)
+        while (true)
         {
-            expression = unary.Operand;
+            if (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } unary)
+            {
+                expression = unary.Operand;
+            }
+            else if (expression is MethodCallExpression { Method.Name: "op_Implicit", Arguments.Count: 1 } conversion && IsSpan(conversion.Method.ReturnType))
+            {
+                expression = conversion.Arguments[0];
+            }
+            else
+            {
+                return expression;
+            }
         }
+    }
 
-        return expression;
+    private static bool IsSpan(Type type)
+    {
+        return type.IsGenericType
+            && (type.GetGenericTypeDefinition().FullName == "System.Span`1" || type.GetGenericTypeDefinition().FullName == "System.ReadOnlySpan`1");
     }
 
     public static bool RootsAtParameter(Expression expression)
