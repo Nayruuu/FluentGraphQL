@@ -59,4 +59,14 @@ public class FieldSelectionTests
             "query { accounts { id contacts { id firstName lastName email } } }",
             Normalize(builder.Query));
     }
+
+    [Fact]
+    public void AddEveryFields_TimeSpanAndNullableBooleanProperties_AreSelected()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder.AddQuery(new GraphQLQueryObject<Horaire>("horaires").AddEveryFields());
+
+        Assert.Equal("query { horaires { heureDebut heureFin actif } }", Normalize(builder.Query));
+    }
 }

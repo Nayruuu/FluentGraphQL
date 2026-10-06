@@ -7,12 +7,12 @@ internal static class ObjectExtensions
         typeof(string), typeof(char), typeof(byte), typeof(sbyte),
         typeof(ushort), typeof(short), typeof(uint), typeof(int),
         typeof(ulong), typeof(long), typeof(float), typeof(double),
-        typeof(decimal), typeof(DateTime), typeof(Guid),
+        typeof(decimal), typeof(DateTime), typeof(Guid), typeof(TimeSpan),
 
         typeof(char?), typeof(byte?), typeof(sbyte?), typeof(ushort?),
         typeof(short?), typeof(uint?), typeof(int?), typeof(ulong?),
         typeof(long?), typeof(float?), typeof(double?), typeof(decimal?),
-        typeof(DateTime?), typeof(Guid?)
+        typeof(DateTime?), typeof(Guid?), typeof(TimeSpan?), typeof(bool?)
     };
 
     public static bool IsPrimitive(this Type type)
