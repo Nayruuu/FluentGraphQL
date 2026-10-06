@@ -56,7 +56,12 @@ internal static class MethodCallTranslator
 
             if (name == "Any" && predicate is null)
             {
-                return FilterNodes.Nest(FilterMembers.MemberPath(collection), "any", true);
+                return FilterNodes.Nest(FilterMembers.MemberPath(collection), "any", negated == false);
+            }
+
+            if (name == "All" && negated)
+            {
+                throw FilterMembers.Unsupported(call);
             }
 
             var op = name == "All" ? "all" : negated ? "none" : "some";

@@ -270,4 +270,45 @@ public class FilterTranslationTests
         Assert.IsType<InvalidOperationException>(exception);
         Assert.Contains("WithArguments", exception.Message);
     }
+
+    [Theory]
+    [InlineData(">", "lt")]
+    [InlineData(">=", "lte")]
+    [InlineData("<", "gt")]
+    [InlineData("<=", "gte")]
+    public void ValueOnTheLeftOfAnInequality_MirrorsTheOperator(string comparison, string expected)
+    {
+        var builder = new GraphQLQueryBuilder();
+        var query = new GraphQLQueryObject<FluentGraphQL.Classes.Task>("tasks").AddField(t => t.Id);
+
+        _ = comparison switch
+        {
+            ">" => query.Where(x => 5 > x.Id),
+            ">=" => query.Where(x => 5 >= x.Id),
+            "<" => query.Where(x => 5 < x.Id),
+            _ => query.Where(x => 5 <= x.Id)
+        };
+        builder.AddQuery(query);
+
+        Assert.Contains($"id: {{ {expected}: 5 }}", builder.Query);
+    }
+
+    [Fact]
+    public void NegatedAnyWithoutPredicate_RendersAnyFalse()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder.AddQuery(new GraphQLQueryObject<Account>("accounts")
+            .AddField(a => a.Id)
+            .Where(x => !x.Contacts.Any()));
+
+        Assert.Contains("contacts: { any: false }", builder.Query);
+    }
+
+    [Fact]
+    public void NegatedAll_ThrowsInsteadOfDroppingTheNegation()
+    {
+        Assert.ThrowsAny<Exception>(() => new GraphQLQueryObject<Account>("accounts")
+            .Where(x => !x.Contacts.All(c => c.FirstName == "John")));
+    }
 }

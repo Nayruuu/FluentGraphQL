@@ -13,10 +13,27 @@ internal static class ComparisonTranslator
     {
         var (member, valueExpression) = FilterMembers.SplitMemberValue(binary.Left, binary.Right);
 
+        if (member == binary.Right)
+        {
+            op = Mirror(op);
+        }
+
         return FilterNodes.Nest(
             FilterMembers.MemberPath(member),
             op,
             FilterValues.CoerceEnum(member, FilterValues.Evaluate(valueExpression)));
+    }
+
+    private static string Mirror(string op)
+    {
+        return op switch
+        {
+            "gt" => "lt",
+            "gte" => "lte",
+            "lt" => "gt",
+            "lte" => "gte",
+            _ => op
+        };
     }
 
     private static string OperatorFor(BinaryExpression binary)
