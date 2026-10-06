@@ -69,4 +69,26 @@ public class FieldSelectionTests
 
         Assert.Equal("query { horaires { heureDebut heureFin actif } }", Normalize(builder.Query));
     }
+
+    [Fact]
+    public void AddEveryFields_AcronymProperties_FollowHotChocolateNaming()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder.AddQuery(new GraphQLQueryObject<Fournisseur>("fournisseurs").AddEveryFields());
+
+        Assert.Equal("query { fournisseurs { id rcs iban advEmail codeRCS } }", Normalize(builder.Query));
+    }
+
+    [Fact]
+    public void WithArguments_AcronymKey_FollowsHotChocolateNaming()
+    {
+        var builder = new GraphQLQueryBuilder();
+
+        builder.AddQuery(new GraphQLQueryObject<Fournisseur>("fournisseurs")
+            .WithArguments(new { where = new { RCS = new { eq = "123" } } })
+            .AddField(fournisseur => fournisseur.IBAN));
+
+        Assert.Equal("query { fournisseurs(where: { rcs: { eq: \"123\" } }) { iban } }", Normalize(builder.Query));
+    }
 }

@@ -515,26 +515,7 @@ public class GraphQLQueryBuilder : GraphQLBuilder
 
     private static void AppendCamelCase(StringBuilder builder, string value)
     {
-        if (string.IsNullOrEmpty(value))
-        {
-            return;
-        }
-
-        var first = value[0];
-
-        if (char.IsUpper(first))
-        {
-            builder.Append(char.ToLowerInvariant(first));
-
-            if (value.Length > 1)
-            {
-                builder.Append(value, 1, value.Length - 1);
-            }
-        }
-        else
-        {
-            builder.Append(value);
-        }
+        builder.Append(value.ToCamelCase());
     }
 
     private static string FormatQueryArgument(object value)
